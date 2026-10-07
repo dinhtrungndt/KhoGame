@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Check, Copy, DoorOpen, Play, Users, Wifi } from 'lucide-react';
 import { createGameSocket } from './realtime.js';
+import { playSfx } from './audio.js';
 
-export default function RoomLobby({ room, onLeave, onStartGame }) {
+export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) {
   const [state, setState] = useState(null);
   const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -10,6 +11,9 @@ export default function RoomLobby({ room, onLeave, onStartGame }) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [socket, setSocket] = useState(null);
+  const soundRef = useRef(sound);
+  const stateRef = useRef(null);
+  soundRef.current = sound;
   const players = state?.players ?? [];
   const me = players.find((player) => player.userId === userId);
   const isHost = me?.isHost ?? false;
@@ -23,9 +27,13 @@ export default function RoomLobby({ room, onLeave, onStartGame }) {
       setLoading(false);
       if (!result?.ok) setError(result?.error || 'Không thể vào phòng realtime.');
     }));
-    connection.on('room:state', (next) => { setState(next); setLoading(false); setError(''); });
+    connection.on('room:state', (next) => {
+      if (stateRef.current && next.players?.length !== stateRef.current.players?.length) playSfx('enter', soundRef.current);
+      stateRef.current = next;
+      setState(next); setLoading(false); setError('');
+    });
     connection.on('room:you', ({ userId: currentId }) => setUserId(currentId));
-    connection.on('game:started', () => onStartGame?.());
+    connection.on('game:started', () => { playSfx('start', soundRef.current); onStartGame?.(); });
     connection.on('room:closed', () => setError('Chủ phòng đã đóng phòng.'));
     connection.on('connect_error', (reason) => { setLoading(false); setError(reason.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập đã hết hạn.' : 'Mất kết nối với máy chủ realtime.'); });
     connection.connect();

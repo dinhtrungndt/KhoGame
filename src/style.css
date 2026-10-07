@@ -2369,4 +2369,51 @@ button {
 @media(prefers-reduced-motion:reduce){.combo-choice-overlay,.combo-choice-modal,.combo-hidden-card{animation-duration:.01ms!important;animation-delay:0ms!important}}
 .turn-label.nope-window{max-width:min(720px,78vw);padding:7px 12px;border:1px solid #ffd98188;border-radius:999px;background:#4b2c18aa;color:#ffe6a6;line-height:1.35;letter-spacing:.03em;box-shadow:0 0 20px #ffd9812a}
 @media(max-width:760px){.turn-label.nope-window{max-width:86vw;font-size:9px;padding:6px 9px}}
+.bomb-positions{align-items:center}.bomb-positions>button{white-space:nowrap}.bomb-position-input{display:grid;gap:4px;min-width:150px;color:#dfebdf;font-size:10px;text-align:center}.bomb-position-input>div{display:flex;gap:5px}.bomb-position-input input{width:62px;min-width:0;padding:7px;border:1px solid #ffffff35;border-radius:8px;background:#092d22;color:#fff;text-align:center}.bomb-position-input button{flex:1;padding:7px 9px;border:1px solid #e5c574;border-radius:8px;background:#e0b95f;color:#2c200e;font-weight:800;cursor:pointer}
+.live-deck.is-shuffling .deck-layer,.live-deck.is-shuffling .deck-front{animation:shuffle-stack 180ms ease-in-out 5}
+@keyframes shuffle-stack{0%,100%{translate:0 0;rotate:0deg}25%{translate:-5px -2px;rotate:-6deg}50%{translate:4px 1px;rotate:5deg}75%{translate:-3px 2px;rotate:-4deg}}
+@media(max-width:760px){.bomb-prompt{gap:9px;padding:12px}.bomb-positions{width:100%;gap:7px}.bomb-positions>button{flex:1;padding:7px 6px;font-size:10px}.bomb-position-input{flex:1;min-width:118px;font-size:9px}.bomb-position-input input{width:48px;padding:6px}.bomb-position-input button{font-size:9px;padding:6px 4px}}
+@media(prefers-reduced-motion:reduce){.live-deck.is-shuffling .deck-layer,.live-deck.is-shuffling .deck-front{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 .combo-select{display:block;width:min(260px,100%);min-height:32px;margin:7px 0;padding:6px 9px;border:1px solid #ffffff35;border-radius:8px;background:#173e31;color:#eef8ef;font-size:10px}.combo-select option{background:#173e31;color:#eef8ef}.live-card-detail>div{max-height:min(38vh,300px);overflow-y:auto}
+/* Celebration overlay and synthesized game audio cues */
+.victory-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 42%, rgba(21, 111, 79, .56), rgba(3, 15, 12, .9) 70%);
+  backdrop-filter: blur(7px);
+  animation: victory-in .55s cubic-bezier(.2,.8,.2,1) both;
+}
+.live-felt.victory-rumble { animation: victory-shake .36s ease-in-out 5; }
+.victory-card {
+  position: relative;
+  z-index: 2;
+  width: min(520px, 92vw);
+  padding: 36px 30px 30px;
+  border: 1px solid rgba(255, 213, 112, .62);
+  border-radius: 28px;
+  background: linear-gradient(145deg, #135f49, #082b24 74%);
+  box-shadow: 0 24px 100px rgba(0,0,0,.5), 0 0 48px rgba(255,190,66,.18), inset 0 1px rgba(255,255,255,.12);
+  color: #fff7dd;
+  text-align: center;
+  animation: victory-card-pop .75s cubic-bezier(.16,1.4,.4,1) both;
+}
+.victory-crown { display: block; color: #ffd46a; font-size: 42px; line-height: 1; text-shadow: 0 0 22px #ffb52e; }
+.victory-card > small { display: block; margin-top: 14px; color: #a8e5c7; font-size: 11px; font-weight: 900; letter-spacing: .2em; }
+.victory-card h1 { margin: 12px 0; color: #ffe38e; font-size: clamp(28px, 5vw, 42px); text-shadow: 0 3px 20px rgba(255,188,65,.35); }
+.victory-card p { margin: 10px 0 22px; font-size: 17px; }
+.victory-card p b { color: #fff; }
+.victory-confetti { margin: 20px 0; font-size: 24px; letter-spacing: .12em; animation: confetti-wiggle .8s ease-in-out infinite alternate; }
+.victory-card .primary { min-width: 150px; justify-content: center; }
+.victory-fireworks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.victory-fireworks i { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: hsl(var(--spark-hue) 100% 68%); box-shadow: 0 0 12px 3px hsl(var(--spark-hue) 100% 60% / .8); opacity: 0; animation: firework-spark 1.7s ease-out var(--spark-delay) infinite; }
+@keyframes victory-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes victory-shake { 0%,100% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-4px,2px) rotate(-.15deg); } 50% { transform: translate(4px,-2px) rotate(.15deg); } 75% { transform: translate(-3px,-1px) rotate(-.1deg); } }
+@keyframes victory-card-pop { from { opacity: 0; transform: translateY(30px) scale(.78) rotate(-2deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+@keyframes firework-spark { 0% { opacity: 0; transform: translate(0,0) scale(.25); } 12% { opacity: 1; } 75% { opacity: .85; } 100% { opacity: 0; transform: translate(var(--burst-x),var(--burst-y)) scale(.05); } }
+@keyframes confetti-wiggle { from { transform: rotate(-4deg) scale(.96); } to { transform: rotate(4deg) scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .victory-overlay, .victory-card, .victory-fireworks i, .victory-confetti { animation-duration: .01ms; animation-iteration-count: 1; } }

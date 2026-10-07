@@ -7,6 +7,7 @@ import Rooms from './Rooms.jsx';
 import RoomLobby from './RoomLobby.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import { api } from './api.js';
+import { playSfx, setMusicEnabled, unlockAudio } from './audio.js';
 
 export default function App() {
   const resetToken = new URLSearchParams(window.location.search).get('token');
@@ -26,6 +27,21 @@ export default function App() {
     if (resetToken) return;
     api.me().then(({ user }) => { setUsername(user.username); setPage('lobby'); }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    window.addEventListener('pointerdown', unlock);
+    window.addEventListener('keydown', unlock);
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+  }, []);
+
+  useEffect(() => {
+    setMusicEnabled(music);
+    return () => setMusicEnabled(false);
+  }, [music]);
 
   async function authenticate(credentials) {
     const result = credentials.mode === 'register'
@@ -65,6 +81,7 @@ export default function App() {
   }
 
   function joinRoom(nextRoom) {
+    playSfx('enter', sound);
     setRoom(nextRoom);
     setPage('roomLobby');
   }
@@ -117,15 +134,15 @@ export default function App() {
         />
       )}
       {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} />}
-      {page === 'roomLobby' && room && <RoomLobby room={room} onLeave={leaveCurrentRoom} onStartGame={startRoomGame} />}
+      {page === 'roomLobby' && room && <RoomLobby room={room} onLeave={leaveCurrentRoom} onStartGame={startRoomGame} sound={sound} />}
       {page === 'table' && (
         <GameTable
           room={room}
           gameName={selectedGame === 'cat' ? 'Mèo Nổ' : 'UNO'}
           sound={sound}
           music={music}
-          onToggleSound={() => setSound(!sound)}
-          onToggleMusic={() => setMusic(!music)}
+          onToggleSound={() => setSound((enabled) => !enabled)}
+          onToggleMusic={() => setMusic((enabled) => !enabled)}
           onHome={() => setPage('lobby')}
           onSettings={() => setModal('settings')}
           onGameNotice={showNotice}
