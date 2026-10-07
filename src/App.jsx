@@ -15,7 +15,6 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [sound, setSound] = useState(true);
   const [music, setMusic] = useState(true);
-  const [selectedCard, setSelectedCard] = useState(-1);
 
   function showNotice(message) {
     setNotice(message);
@@ -70,12 +69,9 @@ export default function App() {
           onToggleSound={() => setSound(!sound)}
           onToggleMusic={() => setMusic(!music)}
           onHome={() => setPage('lobby')}
-          onHelp={() => setModal('rules')}
           onSettings={() => setModal('settings')}
           onDraw={() => showNotice('Bản chơi thử: thao tác rút bài chưa nối luật.')}
-          onPlayCard={(index) => { setSelectedCard(index); showNotice('Đã chọn lá bài trong bản xem trước.'); }}
-          selectedCard={selectedCard}
-          onEndTurn={() => showNotice('Bản chơi thử chưa xử lý lượt.')}
+          onPlayCard={({ cards, type }) => showNotice(`Đã đánh ${cards.length} lá (${type}) trong bản xem trước.`)}
         />
       )}
 
