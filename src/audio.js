@@ -1,6 +1,8 @@
 let audioContext;
 let musicTimer;
 let musicStep = 0;
+let audioUnlocked = false;
+let musicRequested = false;
 
 function getContext() {
   if (typeof window === 'undefined') return null;
@@ -11,7 +13,11 @@ function getContext() {
   return audioContext;
 }
 
-export function unlockAudio() { getContext(); }
+export function unlockAudio() {
+  audioUnlocked = true;
+  getContext();
+  if (musicRequested) startMusicLoop();
+}
 
 function tone(frequency, start, duration, type = 'sine', volume = 0.08) {
   const oscillator = audioContext.createOscillator();
@@ -52,11 +58,17 @@ export function playSfx(name, enabled = true) {
 }
 
 export function setMusicEnabled(enabled) {
+  musicRequested = enabled;
   if (!enabled) {
     window.clearInterval(musicTimer);
     musicTimer = undefined;
     return;
   }
+  if (!audioUnlocked) return;
+  startMusicLoop();
+}
+
+function startMusicLoop() {
   if (musicTimer) return;
   const ctx = getContext();
   if (!ctx) return;
