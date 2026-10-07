@@ -32,5 +32,7 @@ export const api = {
   listRooms: (gameType = 'meono') => request(`/rooms?game=${encodeURIComponent(gameType)}`),
   createRoom: (body) => request('/rooms', json(body)),
   quickJoin: (gameType = 'meono') => request('/rooms/quick-join', json({ gameType })),
-  joinRoom: (code, password = '') => request(`/rooms/${encodeURIComponent(code)}/join`, json({ password })),
+  joinRoom: (code, password = '', gameType = 'meono') => request(`/rooms/${encodeURIComponent(code)}/join`, json({ password, gameType })),
+  getRoom: (code) => request(`/rooms/${encodeURIComponent(code)}`),
+  leaveRoom: (code) => request(`/rooms/${encodeURIComponent(code)}/leave`, json({})),
 };

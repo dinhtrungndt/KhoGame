@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
 
 :root {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', Tahoma, Arial, sans-serif;
   color: #edf7ef;
   background: #0e1714;
   font-synthesis: none;
@@ -47,7 +47,7 @@ button {
   display: flex;
   align-items: center;
   gap: 9px;
-  font: 800 14px Manrope;
+  font: 800 14px 'Be Vietnam Pro';
   letter-spacing: .13em
 }
 .brand i {
@@ -68,7 +68,7 @@ button {
   color: #9fb8a9
 }
 .brand small {
-  font: 700 8px 'DM Sans';
+  font: 700 8px 'Be Vietnam Pro';
   color: #8fe6b7;
   border: 1px solid #58ce974d;
   padding: 4px 6px;
@@ -121,7 +121,7 @@ button {
 }
 .hero h1,
 .center h1 {
-  font: 700 clamp(38px, 4.1vw, 56px)/1.1 Manrope;
+  font: 700 clamp(38px, 4.1vw, 56px)/1.1 'Be Vietnam Pro';
   letter-spacing: -.055em;
   margin: 19px 0 13px
 }
@@ -167,7 +167,7 @@ button {
   color: #9274bf
 }
 .cards-deco small {
-  font: 700 8px 'DM Sans';
+  font: 700 8px 'Be Vietnam Pro';
   letter-spacing: .14em;
   margin-top: 7px
 }
@@ -196,7 +196,7 @@ button {
   margin: auto
 }
 .auth-box h2 {
-  font: 700 34px Manrope;
+  font: 700 34px 'Be Vietnam Pro';
   letter-spacing: -.04em;
   margin: 13px 0 5px
 }
@@ -438,7 +438,7 @@ button {
 .game strong {
   position: relative;
   z-index: 1;
-  font: 700 22px Manrope;
+  font: 700 22px 'Be Vietnam Pro';
   letter-spacing: -.035em
 }
 .game>span {
@@ -545,7 +545,7 @@ button {
   display: flex;
   align-items: center;
   gap: 9px;
-  font: 700 12px Manrope
+  font: 700 12px 'Be Vietnam Pro'
 }
 .table-brand>i {
   width: 33px;
@@ -559,7 +559,7 @@ button {
 }
 .table-brand small {
   display: block;
-  font: 600 8px 'DM Sans';
+  font: 600 8px 'Be Vietnam Pro';
   letter-spacing: .1em;
   color: #82968a;
   margin-top: 3px
@@ -630,7 +630,7 @@ button {
   color: #724528;
   display: grid;
   place-items: center;
-  font: 700 13px Manrope;
+  font: 700 13px 'Be Vietnam Pro';
   font-style: normal
 }
 .seat.left>i {
@@ -924,7 +924,7 @@ button {
   color: #8ce2ad
 }
 .modal h3 {
-  font: 700 19px Manrope;
+  font: 700 19px 'Be Vietnam Pro';
   margin: 13px 0 7px
 }
 .modal p {
@@ -994,7 +994,7 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
-    font: 800 12px Manrope;
+    font: 800 12px 'Be Vietnam Pro';
     letter-spacing: .1em
   }
   .mini-brand svg {
@@ -1214,7 +1214,7 @@ button {
   display:flex;
   align-items:center;
   gap:8px;
-  font:800 12px Manrope;
+  font:800 12px 'Be Vietnam Pro';
   letter-spacing:.12em
 }
 .rooms-brand>i {
@@ -1230,7 +1230,7 @@ button {
 }
 .rooms-brand small {
   display:block;
-  font:600 7px 'DM Sans';
+  font:600 7px 'Be Vietnam Pro';
   color:#82968a;
   letter-spacing:.13em;
   margin-top:3px
@@ -1267,7 +1267,7 @@ button {
   margin-bottom:23px
 }
 .rooms-intro h1,.created-card h1 {
-  font:700 34px Manrope;
+  font:700 34px 'Be Vietnam Pro';
   letter-spacing:-.05em;
   margin:9px 0 6px
 }
@@ -1322,7 +1322,7 @@ button {
   color:#efd082
 }
 .room-option>b {
-  font:700 15px Manrope
+  font:700 15px 'Be Vietnam Pro'
 }
 .room-option>small {
   font-size:9px;
@@ -1405,11 +1405,11 @@ button {
   font-size:19px
 }
 .capacity-control strong {
-  font:700 18px Manrope;
+  font:700 18px 'Be Vietnam Pro';
   color:#8ce0aa
 }
 .capacity-control strong small {
-  font:500 9px 'DM Sans';
+  font:500 9px 'Be Vietnam Pro';
   color:#9daea2
 }
 .field-hint {
@@ -1491,7 +1491,7 @@ button {
   color:#94ad9b
 }
 .code-box strong {
-  font:800 25px Manrope;
+  font:800 25px 'Be Vietnam Pro';
   letter-spacing:.2em;
   color:#a5efbd
 }
@@ -1984,7 +1984,7 @@ button {
   color:#8dd9a7
 }
 .card-detail h3 {
-  font:700 14px Manrope;
+  font:700 14px 'Be Vietnam Pro';
   margin:5px 0
 }
 .card-detail p {
@@ -2059,7 +2059,7 @@ button {
   border-bottom:1px solid #ffffff18
 }
 .guide-panel>header h2 {
-  font:700 24px Manrope;
+  font:700 24px 'Be Vietnam Pro';
   margin:5px 0 0
 }
 .guide-kicker {
@@ -2092,12 +2092,12 @@ button {
   border-bottom:1px solid #ffffff10
 }
 .guide-number {
-  font:700 9px Manrope;
+  font:700 9px 'Be Vietnam Pro';
   color:#83dca4;
   padding-top:3px
 }
 .guide-section h3 {
-  font:700 12px Manrope;
+  font:700 12px 'Be Vietnam Pro';
   margin:0 0 6px;
   color:#eff7f0
 }
@@ -2310,3 +2310,5 @@ button {
 .reset-page{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0%,#174b35 0%,#0d201a 58%,#0a1511 100%);color:#eef8f0}.reset-box{width:min(430px,100%);padding:32px;border:1px solid #ffffff1a;border-radius:18px;background:#10241dcc;box-shadow:0 24px 80px #0006}.reset-box .mini-brand{display:flex;align-items:center;gap:8px;color:#dcf7e3;font-weight:800;margin-bottom:30px}.reset-box>.back-link{display:flex;align-items:center;gap:6px;margin:0 0 28px;color:#bdd5c3;background:none;border:0;cursor:pointer;font-size:12px}.reset-box h1{font-size:28px;margin:8px 0}.reset-box>p{color:#a5b8aa;font-size:13px;line-height:1.6;margin:0 0 24px}.reset-box form{display:grid;gap:16px}.reset-box form>label{display:grid;gap:7px;font-size:12px;color:#dce9df}.reset-box form input{width:100%;min-width:0;height:42px;padding:0 12px;border:1px solid #ffffff24;border-radius:9px;background:#ffffff0a;color:#f5fff7;outline:none}.reset-box form input:focus{border-color:#77d799}.reset-box .pass{display:flex;align-items:center;border:1px solid #ffffff24;border-radius:9px;background:#ffffff0a}.reset-box .pass input{border:0;background:transparent}.reset-box .pass button{border:0;background:none;color:#b8c9bd;padding:8px;cursor:pointer}.reset-box form .primary{min-height:42px}.reset-box form .primary:disabled{opacity:.6;cursor:wait}
 
 .profile-actions{display:flex;align-items:center;gap:8px}.logout-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #ffffff1b;background:#ffffff08;color:#c5d5ca;padding:9px 12px;border-radius:22px;font-size:10px;cursor:pointer;transition:background .18s,border-color .18s,color .18s}.logout-button:hover:not(:disabled){background:#ff76621a;border-color:#ff8b7a66;color:#ffb2a6}.logout-button:disabled{opacity:.55;cursor:wait}@media(max-width:420px){.profile-actions{gap:5px}.profile{padding:8px 9px;font-size:9px}.logout-button{padding:8px 9px;font-size:9px;gap:5px}}
+
+.waiting-main{width:min(820px,calc(100% - 40px));margin:0 auto;padding:44px 0 28px}.waiting-heading{text-align:center;margin-bottom:24px}.waiting-heading h1{font-size:clamp(28px,4vw,42px);margin:9px 0 7px}.waiting-heading p{color:#9fb2a5;font-size:13px}.waiting-code{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 20px;margin:0 0 18px;border:1px solid #ffffff18;border-radius:16px;background:linear-gradient(110deg,#194331aa,#12241ddd)}.waiting-code>div{display:grid;gap:4px}.waiting-code small{color:#99b4a2;font-size:9px;letter-spacing:.13em}.waiting-code strong{font-size:27px;letter-spacing:.12em;color:#9af0b9}.waiting-code span{color:#9fb2a5;font-size:10px}.waiting-code button,.waiting-footer button{display:inline-flex;align-items:center;gap:7px}.waiting-players{padding:18px;border:1px solid #ffffff16;border-radius:16px;background:#101e19cc}.waiting-players>header,.waiting-players>header>div{display:flex;align-items:center}.waiting-players>header{justify-content:space-between;padding:1px 1px 14px;border-bottom:1px solid #ffffff13}.waiting-players>header>div{gap:8px}.waiting-players>header>div>svg{color:#73dfa1}.waiting-players>header b{font-size:13px}.waiting-players>header>div>span{color:#9fb2a5;font-size:11px}.live-dot,.waiting-footer>span{display:flex;align-items:center;gap:7px;color:#91a397;font-size:10px}.live-dot i,.waiting-footer>span:before{width:7px;height:7px;border-radius:50%;background:#61d791;box-shadow:0 0 10px #61d79166}.waiting-seat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.waiting-seat{min-height:62px;display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px dashed #ffffff1d;border-radius:12px;background:#ffffff04}.waiting-seat.occupied{border-style:solid;border-color:#7ce4a633;background:#55c9850b}.seat-avatar{width:35px;height:35px;flex:none;display:grid;place-items:center;border-radius:11px;background:#ffffff0d;color:#8eaa98;font-size:14px;font-weight:700}.seat-avatar.av0{background:#4cc88922;color:#90efb3}.seat-avatar.av1{background:#6d93e522;color:#a5c0ff}.seat-avatar.av2{background:#d9914922;color:#ffca88}.seat-avatar.av3{background:#bb77d922;color:#e3adff}.seat-avatar.av4{background:#e1707022;color:#ffaaaa}.seat-avatar.av5{background:#53c6c322;color:#8ce7e3}.waiting-seat>div{min-width:0;display:grid;gap:3px}.waiting-seat>div b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e6f2e9;font-size:11px}.waiting-seat>div small{color:#91a397;font-size:9px}.host-tag{margin-left:auto;padding:4px 6px;border-radius:5px;background:#67d89118;color:#9ae8b3;font-size:7px;letter-spacing:.07em}.waiting-footer{display:flex;align-items:center;justify-content:space-between;margin-top:15px}.waiting-footer>span:before{content:""}.waiting-note{text-align:center;color:#71877a;font-size:9px;margin:15px 0 0}.waiting-page .rooms-top{padding-left:max(24px,calc((100vw - 1180px)/2));padding-right:max(24px,calc((100vw - 1180px)/2))}.waiting-page .back-link:disabled,.waiting-footer button:disabled{opacity:.5;cursor:wait}@media(max-width:620px){.waiting-main{width:calc(100% - 26px);padding:30px 0 22px}.waiting-code{padding:14px;align-items:flex-end}.waiting-code strong{font-size:23px}.waiting-code button{padding:8px;font-size:9px}.waiting-players{padding:13px}.waiting-players>header{align-items:flex-start;gap:8px;flex-direction:column}.waiting-seat-grid{grid-template-columns:1fr}.waiting-seat{min-height:57px}.waiting-page .rooms-top{padding-left:13px;padding-right:13px}.waiting-page .online-pill{font-size:0;gap:0}.waiting-page .online-pill i{width:8px;height:8px}}

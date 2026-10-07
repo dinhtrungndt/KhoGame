@@ -4,6 +4,7 @@ import AuthPage from './pages/AuthPage.jsx';
 import LobbyPage from './pages/LobbyPage.jsx';
 import GameTable from './pages/GameTable.jsx';
 import Rooms from './Rooms.jsx';
+import RoomLobby from './RoomLobby.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import { api } from './api.js';
 
@@ -65,8 +66,13 @@ export default function App() {
 
   function joinRoom(nextRoom) {
     setRoom(nextRoom);
-    setPage('table');
-    showNotice('Đã vào phòng xem trước');
+    setPage('roomLobby');
+  }
+
+  async function leaveCurrentRoom() {
+    await api.leaveRoom(room.code);
+    setRoom(null);
+    setPage('rooms');
   }
 
   async function resetPassword(password) {
@@ -109,6 +115,7 @@ export default function App() {
         />
       )}
       {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} />}
+      {page === 'roomLobby' && room && <RoomLobby room={room} onLeave={leaveCurrentRoom} />}
       {page === 'table' && (
         <GameTable
           room={room}
