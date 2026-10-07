@@ -20,6 +20,7 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
   const [socket, setSocket] = useState(null);
   const [game, setGame] = useState(null);
   const [hand, setHand] = useState([]);
+  const [receivedCardId, setReceivedCardId] = useState(null);
   const [userId, setUserId] = useState(null);
   const [pendingBomb, setPendingBomb] = useState(null);
   const [pendingCombo, setPendingCombo] = useState(null);
@@ -40,6 +41,7 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
   const hasInitialGame = useRef(false);
   const dealTimer = useRef(null);
   const flightTimer = useRef(null);
+  const receivedCardTimer = useRef(null);
   const peekTimer = useRef(null);
   const shuffleTimer = useRef(null);
   const userIdRef = useRef(null);
@@ -116,7 +118,12 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
       userIdRef.current = data.userId;
       setUserId(data.userId);
       const nextHand = data.hand || [];
-      if (lastHandSize.current !== null && nextHand.length > lastHandSize.current) playSfx('draw', soundRef.current);
+      if (lastHandSize.current !== null && nextHand.length > lastHandSize.current) {
+        playSfx('draw', soundRef.current);
+        setReceivedCardId(nextHand.at(-1)?.id ?? null);
+        window.clearTimeout(receivedCardTimer.current);
+        receivedCardTimer.current = window.setTimeout(() => setReceivedCardId(null), 850);
+      }
       lastHandSize.current = nextHand.length;
       if (data.pendingBomb && !lastBomb.current) playSfx('bomb', soundRef.current);
       if (!data.pendingBomb && lastBomb.current) playSfx('defuse', soundRef.current);
@@ -134,7 +141,7 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
     connection.on('connect_error', (error) => onGameNotice?.(error.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập đã hết hạn.' : 'Mất kết nối với bàn chơi.'));
     connection.connect();
     setSocket(connection);
-    return () => { connection.removeAllListeners(); connection.disconnect(); window.clearTimeout(dealTimer.current); window.clearTimeout(flightTimer.current); window.clearTimeout(peekTimer.current); window.clearTimeout(shuffleTimer.current); };
+    return () => { connection.removeAllListeners(); connection.disconnect(); window.clearTimeout(dealTimer.current); window.clearTimeout(flightTimer.current); window.clearTimeout(receivedCardTimer.current); window.clearTimeout(peekTimer.current); window.clearTimeout(shuffleTimer.current); };
   }, [room?.code, onGameNotice]);
 
   function request(event, payload, done = () => {}) {
@@ -183,6 +190,7 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
   }
 
   const discard = cards[game?.discardTop];
+  const discardCardId = game?.discardCards?.at(-1)?.id;
   const currentPlayer = game?.players.find((player) => player.userId === game.currentPlayerId);
   const pending = game?.pendingBombUserId === userId;
   const secondsLeft = game?.turnDeadline ? Math.max(0, Math.ceil((game.turnDeadline - clockNow) / 1000)) : 15;
