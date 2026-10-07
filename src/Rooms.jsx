@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, Plus, RefreshCw, Search, Users, Wifi } from 'lucide-react';
 import { api } from './api.js';
+import { createGameSocket } from './realtime.js';
 
 export default function Rooms({ onBack, onJoin }) {
   const [view, setView] = useState('home');
@@ -30,21 +31,14 @@ export default function Rooms({ onBack, onJoin }) {
 
   useEffect(() => {
     if (view !== 'find') return undefined;
-    let mounted = true;
-    const load = async (showSpinner = false) => {
-      if (showSpinner) setLoadingList(true);
-      try {
-        const result = await api.listRooms('meono');
-        if (mounted) { setLiveRooms(result.rooms); setMessage(''); }
-      } catch (error) {
-        if (mounted) setMessage(error.message);
-      } finally {
-        if (mounted && showSpinner) setLoadingList(false);
-      }
-    };
-    load(true);
-    const timer = window.setInterval(() => load(false), 5000);
-    return () => { mounted = false; window.clearInterval(timer); };
+    setLoadingList(true);
+    const socket = createGameSocket();
+    const onRooms = ({ rooms }) => { setLiveRooms(rooms); setMessage(''); setLoadingList(false); };
+    socket.on('connect', () => socket.emit('rooms:watch', { gameType: 'meono' }));
+    socket.on('rooms:list', onRooms);
+    socket.on('connect_error', (error) => { setMessage(error.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập hết hạn. Hãy đăng nhập lại.' : 'Không thể kết nối realtime. Thử nút làm mới để tải danh sách.'); setLoadingList(false); });
+    socket.connect();
+    return () => { socket.removeAllListeners(); socket.disconnect(); };
   }, [view]);
 
   async function createRoom(event) {
@@ -165,6 +159,6 @@ function FindRoomList({ rooms, query, setQuery, onJoin, onJoinByCode, loading, l
       {rooms.map((room, index) => { const full = room.players >= room.max; return <article className="room-row" key={room.code}><span className={`room-avatar av${index % 6}`}>✦</span><div className="room-row-info"><b>{room.name}</b><small>Chủ phòng: {room.host}　•　{room.code}</small></div><div className="room-count"><Users size={14} />{room.players}/{room.max}</div><button className="join-btn" disabled={full || loading} onClick={() => onJoin(room)}>{full ? 'Đã đầy' : loading ? 'Đang vào…' : 'Vào phòng'}</button></article>; })}
       {!rooms.length && <div className="empty-rooms">{loadingList ? 'Đang tải phòng…' : query ? 'Không tìm thấy phòng phù hợp.' : 'Chưa có phòng công khai còn chỗ.'}</div>}
     </div>
-    <div className="find-bottom"><span><i /> Tự cập nhật mỗi 5 giây</span><button onClick={onRefresh} disabled={loadingList}><RefreshCw size={14} /> {loadingList ? 'Đang tải…' : 'Làm mới'}</button></div>
+    <div className="find-bottom"><span><i /> Danh sách cập nhật trực tiếp</span><button onClick={onRefresh} disabled={loadingList}><RefreshCw size={14} /> {loadingList ? 'Đang tải…' : 'Làm mới'}</button></div>
   </>;
 }

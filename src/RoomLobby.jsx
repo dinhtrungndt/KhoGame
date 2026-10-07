@@ -1,74 +1,88 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, ArrowRight, Check, Copy, DoorOpen, RefreshCw, Users, Wifi } from 'lucide-react';
-import { api } from './api.js';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Check, Copy, DoorOpen, Play, Users, Wifi } from 'lucide-react';
+import { createGameSocket } from './realtime.js';
 
-export default function RoomLobby({ room, onLeave }) {
-  const [currentRoom, setCurrentRoom] = useState(null);
+export default function RoomLobby({ room, onLeave, onStartGame }) {
+  const [state, setState] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [leaving, setLeaving] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const players = state?.players ?? [];
+  const me = players.find((player) => player.userId === userId);
+  const isHost = me?.isHost ?? false;
+  const canStart = Boolean(state?.canStart && isHost);
+  const openSeats = useMemo(() => Math.max(0, (state?.room?.max ?? room.max ?? 5) - players.length), [players.length, room.max, state?.room?.max]);
 
   useEffect(() => {
-    let active = true;
-    async function refresh() {
-      try {
-        const result = await api.getRoom(room.code);
-        if (active) { setCurrentRoom(result.room); setError(''); }
-      } catch (requestError) {
-        if (active) setError(requestError.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-    refresh();
-    const timer = window.setInterval(refresh, 3000);
-    return () => { active = false; window.clearInterval(timer); };
-  }, [room.code]);
+    const connection = createGameSocket();
+    setSocket(connection);
+    connection.on('connect', () => connection.emit('room:join', { code: room.code }, (result) => {
+      setLoading(false);
+      if (!result?.ok) setError(result?.error || 'Không thể vào phòng realtime.');
+    }));
+    connection.on('room:state', (next) => { setState(next); setLoading(false); setError(''); });
+    connection.on('room:you', ({ userId: currentId }) => setUserId(currentId));
+    connection.on('game:started', () => onStartGame?.());
+    connection.on('room:closed', () => setError('Chủ phòng đã đóng phòng.'));
+    connection.on('connect_error', (reason) => { setLoading(false); setError(reason.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập đã hết hạn.' : 'Mất kết nối với máy chủ realtime.'); });
+    connection.connect();
+    return () => { connection.removeAllListeners(); connection.disconnect(); };
+  }, [room.code, onStartGame]);
 
   async function copyCode() {
-    try {
-      await navigator.clipboard.writeText(room.code);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setError('Không sao chép được mã phòng. Bạn có thể bôi đen để sao chép thủ công.');
-    }
+    try { await navigator.clipboard.writeText(room.code); setCopied(true); window.setTimeout(() => setCopied(false), 1500); }
+    catch { setError('Không sao chép được mã phòng.'); }
+  }
+
+  function toggleReady() {
+    if (!socket?.connected || !me) return;
+    setError('');
+    socket.emit('room:ready', { code: room.code, ready: !me.ready }, (result) => { if (!result?.ok) setError(result?.error || 'Không đổi được trạng thái sẵn sàng.'); });
+  }
+
+  function startGame() {
+    if (!canStart || !socket?.connected) return;
+    setError('');
+    socket.emit('game:start', { code: room.code }, (result) => { if (!result?.ok) setError(result?.error || 'Không thể bắt đầu ván.'); });
   }
 
   async function exitRoom() {
     setLeaving(true);
-    try { await onLeave(); }
-    catch (requestError) { setError(requestError.message); setLeaving(false); }
+    try { await onLeave(); } catch (requestError) { setError(requestError.message); setLeaving(false); }
   }
-
-  const players = currentRoom?.players ?? [];
-  const capacity = currentRoom?.max ?? room.max ?? 5;
-  const filledSeats = new Map(players.map((player) => [player.seat, player]));
 
   return (
     <section className="rooms-page waiting-page">
       <header className="rooms-top">
         <button className="back-link" onClick={exitRoom} disabled={leaving}><ArrowLeft size={17} />{leaving ? 'Đang rời phòng…' : 'Rời phòng'}</button>
-        <div className="rooms-brand"><i>✦</i><span>MÈO NỔ<small>PHÒNG CHỜ</small></span></div>
-        <span className="online-pill"><i />Đang cập nhật</span>
+        <div className="rooms-brand"><i>✦</i><span>MÈO NỔ<small>BÀN CHỜ</small></span></div>
+        <span className="online-pill"><i />{socket?.connected ? 'Realtime' : 'Đang kết nối'}</span>
       </header>
-      <main className="waiting-main">
-        <div className="waiting-heading"><label className="kicker">PHÒNG ĐÃ SẴN SÀNG</label><h1>{currentRoom?.name ?? room.name}</h1><p>Chia sẻ mã phòng để bạn bè cùng tham gia.</p></div>
-        <div className="waiting-code"><div><small>MÃ PHÒNG</small><strong>{room.code}</strong><span>{currentRoom?.visibility === 'private' || room.visibility === 'private' ? 'Phòng riêng' : 'Phòng công khai'}</span></div><button className="secondary" onClick={copyCode}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Đã sao chép' : 'Sao chép mã'}</button></div>
-        <section className="waiting-players">
-          <header><div><Users size={17} /><b>Người chơi</b><span>{loading ? 'Đang tải…' : `${players.length}/${capacity}`}</span></div><span className="live-dot"><i /> cập nhật mỗi 3 giây</span></header>
-          {error && <div className="inline-error" role="status">{error}</div>}
-          <div className="waiting-seat-grid">
-            {Array.from({ length: capacity }, (_, index) => {
-              const player = filledSeats.get(index + 1);
-              return <article className={`waiting-seat ${player ? 'occupied' : ''}`} key={index}><span className={`seat-avatar av${index % 6}`}>{player ? player.username.slice(0, 1).toUpperCase() : '+'}</span><div><b>{player?.username ?? 'Đang chờ người chơi'}</b><small>{player ? player.isHost ? 'Chủ phòng' : `Người chơi ${player.seat}` : `Vị trí ${index + 1}`}</small></div>{player?.isHost && <span className="host-tag">CHỦ PHÒNG</span>}</article>;
-            })}
+      <main className="room-table-page">
+        <div className="room-table-heading"><div><label className="kicker">PHÒNG {room.code}</label><h1>{state?.room?.name ?? room.name}</h1></div><button className="secondary" onClick={copyCode}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Đã sao chép' : 'Mời bạn'}</button></div>
+        <section className="felt waiting-felt" aria-label="Bàn chờ Mèo Nổ">
+          <div className="waiting-felt-text"><span className="felt-spark">✦</span><strong>{players.length < 3 ? 'Đang chờ thêm người chơi' : state?.canStart ? 'Bàn đã sẵn sàng!' : 'Chờ mọi người sẵn sàng'}</strong><small><Users size={14} /> {players.length}/{state?.room?.max ?? room.max} người　·　Cần tối thiểu 3 người</small>
+            {isHost ? <button className={`table-start ${canStart ? 'ready-to-start' : ''}`} onClick={startGame} disabled={!canStart || loading}><Play size={18} fill="currentColor" /> BẮT ĐẦU VÁN</button> : <span className="host-wait">Chủ phòng sẽ bắt đầu khi mọi người sẵn sàng</span>}
           </div>
-          {!players.length && !loading && <p className="empty-rooms">Không tải được danh sách người chơi.</p>}
+          {Array.from({ length: Math.min(10, state?.room?.max ?? room.max ?? 5) }, (_, index) => {
+            const player = players.find((item) => item.seat === index + 1);
+            const angle = (Math.PI * 2 * index) / Math.min(10, state?.room?.max ?? room.max ?? 5) - Math.PI / 2;
+            const radiusX = 42; const radiusY = 39;
+            return <article key={index} className={`lobby-player-seat ${player ? 'is-filled' : ''} ${player?.userId === userId ? 'is-you' : ''}`} style={{ left: `${50 + Math.cos(angle) * radiusX}%`, top: `${50 + Math.sin(angle) * radiusY}%` }}>
+              <span className={`lobby-avatar av${index % 6}`}>{player ? player.username.slice(0, 1).toLocaleUpperCase() : '+'}</span><b>{player?.username ?? 'Ghế trống'}</b><small>{player?.isHost ? 'Chủ phòng' : player?.userId === userId ? 'Bạn' : player ? 'Người chơi' : 'Đang chờ'}</small>{player && <em className={player.ready ? 'seat-ready' : ''}>{player.ready ? 'SẴN SÀNG' : 'CHƯA SẴN SÀNG'}</em>}
+            </article>;
+          })}
+          <span className="table-room-count"><Wifi size={14} /> {openSeats ? `Còn ${openSeats} ghế trống` : 'Đã đủ người'}</span>
         </section>
-        <div className="waiting-footer"><span><Wifi size={15} /> Phòng lưu trên máy chủ</span><button className="secondary" onClick={exitRoom} disabled={leaving}><DoorOpen size={16} /> Rời phòng</button></div>
-        <p className="waiting-note">Bàn chơi sẽ bắt đầu khi chức năng ván đấu được hoàn thiện.</p>
+        <div className="room-table-actions">
+          {error && <div className="inline-error" role="alert">{error}</div>}
+          <div className="ready-summary"><Users size={17} /><b>{loading ? 'Đang kết nối bàn chơi…' : `${state?.readyCount ?? 0}/${players.length} người đã sẵn sàng`}</b><span>Trạng thái được đồng bộ tức thì</span></div>
+          <button className={`primary ready-toggle ${me?.ready ? 'is-ready' : ''}`} onClick={toggleReady} disabled={!me || loading || !socket?.connected}><Check size={18} />{me?.ready ? 'BỎ SẴN SÀNG' : 'TÔI ĐÃ SẴN SÀNG'}</button>
+          <button className="secondary leave-table" onClick={exitRoom} disabled={leaving}><DoorOpen size={16} /> Rời bàn</button>
+        </div>
       </main>
     </section>
   );

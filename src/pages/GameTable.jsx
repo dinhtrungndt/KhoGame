@@ -1,129 +1,99 @@
-import React, { useState } from 'react';
-import { ArrowRight, CircleHelp, Home, Music2, Settings, Volume2, VolumeX, X } from 'lucide-react';
-import { demoHand } from '../data/cards.js';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, CircleHelp, Home, Music2, Settings, Volume2, VolumeX } from 'lucide-react';
+import { cards } from '../data/cards.js';
+import { createGameSocket } from '../realtime.js';
 import RulesGuide from './RulesGuide.jsx';
 
-function validatePlay(selection) {
-  if (!selection.length) return { valid: false, title: 'Chọn lá bài', message: 'Chọn một lá để xem chức năng.' };
-  if (selection.length === 1) {
-    const card = selection[0];
-    if (card.name === 'Defuse') return { valid: false, title: card.name, message: 'Gỡ Bom chỉ dùng ngay khi bạn rút trúng Mèo Nổ.' };
-    if (card.category === 'cat') return { valid: false, title: card.name, message: 'Lá mèo không có tác dụng khi đánh một mình. Hãy ghép combo.' };
-    return { valid: true, type: 'action', title: card.name, message: card.description };
-  }
-  const sameCatPair = selection.every((card) => card.category === 'cat' && card.name === selection[0].name);
-  if (selection.length === 2 && sameCatPair) {
-    return { valid: true, type: 'pair', title: 'Combo: 2 lá cùng loại', message: 'Chọn một người chơi để lấy ngẫu nhiên một lá bài.' };
-  }
-  if (selection.length === 3 && sameCatPair) {
-    return { valid: true, type: 'triple', title: 'Combo: 3 lá cùng loại', message: 'Chọn người chơi và gọi tên lá muốn lấy. Nếu họ có lá đó, họ phải đưa cho bạn.' };
-  }
-  if (selection.length === 5 && new Set(selection.map((card) => card.name)).size === 5) {
-    return { valid: true, type: 'five', title: 'Combo: 5 lá khác loại', message: 'Chọn một lá từ chồng bài bỏ.' };
-  }
-  return { valid: false, title: 'Combo chưa hợp lệ', message: 'Ghép 2 hoặc 3 lá mèo cùng loại, hoặc chọn 5 lá khác loại.' };
-}
+const cardInfo = (card) => cards[card?.key] || null;
 
-export default function GameTable({ room, gameName, sound, music, onToggleSound, onToggleMusic, onHome, onSettings, onDraw, onPlayCard }) {
-  const [hand, setHand] = useState(demoHand);
-  const [discard, setDiscard] = useState(demoHand[0]);
-  const [selectedIndices, setSelectedIndices] = useState([]);
-  const [drawing, setDrawing] = useState(false);
-  const [drawingCard, setDrawingCard] = useState(null);
-  const [playedCard, setPlayedCard] = useState(null);
+export default function GameTable({ room, gameName, sound, music, onToggleSound, onToggleMusic, onHome, onSettings, onGameNotice }) {
+  const [socket, setSocket] = useState(null);
+  const [game, setGame] = useState(null);
+  const [hand, setHand] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [pendingBomb, setPendingBomb] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [targetId, setTargetId] = useState(null);
+  const [peek, setPeek] = useState(null);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const me = game?.players.find((player) => player.userId === userId);
+  const isMyTurn = game?.currentPlayerId === userId && Boolean(me?.alive) && !pendingBomb;
+  const chosenCard = hand.find((item) => item.id === selected);
+  const chosenInfo = cardInfo(chosenCard);
+  const opponents = useMemo(() => (game?.players ?? []).filter((player) => player.userId !== userId), [game?.players, userId]);
 
-  const selectedCards = selectedIndices.map((index) => hand[index]).filter(Boolean);
-  const playStatus = validatePlay(selectedCards);
+  useEffect(() => {
+    const connection = createGameSocket();
+    setSocket(connection);
+    connection.on('connect', () => connection.emit('room:join', { code: room?.code }));
+    connection.on('room:you', ({ userId: currentId }) => setUserId(currentId));
+    connection.on('game:state', setGame);
+    connection.on('game:private', (data) => {
+      setUserId((currentId) => {
+        if (currentId == null || currentId === data.userId) {
+          setHand(data.hand || []);
+          setPendingBomb(data.pendingBomb || null);
+          if (data.peek) setPeek(data.peek);
+          return data.userId;
+        }
+        return currentId;
+      });
+    });
+    connection.on('connect_error', (error) => onGameNotice?.(error.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập đã hết hạn.' : 'Mất kết nối với bàn chơi.'));
+    connection.connect();
+    setSocket(connection);
+    return () => { connection.removeAllListeners(); connection.disconnect(); };
+  }, [room?.code, onGameNotice]);
 
-  function drawCard() {
-    const next = demoHand[Math.floor(Math.random() * demoHand.length)];
-    setDrawing(true);
-    setDrawingCard(next);
-    setHand((current) => [...current, next]);
-    setSelectedIndices([]);
-    window.setTimeout(() => { setDrawing(false); setDrawingCard(null); }, 720);
-    onDraw();
+  function request(event, payload, done = () => {}) {
+    if (!socket?.connected || busy) return;
+    setBusy(true);
+    socket.emit(event, { code: room?.code, ...payload }, (result) => {
+      setBusy(false);
+      if (!result?.ok) onGameNotice?.(result?.error || 'Không thể thực hiện thao tác.');
+      else done(result);
+    });
   }
 
-  function selectCard(index) {
-    setSelectedIndices((current) => current.includes(index)
-      ? current.filter((selected) => selected !== index)
-      : [...current, index]);
+  function toggleCard(card) { setSelected((current) => current === card.id ? null : card.id); setTargetId(null); }
+  function playSelected() {
+    if (!chosenCard || !isMyTurn) return;
+    if (chosenCard.key === 'favor' && !targetId) { onGameNotice?.('Chọn người chơi để dùng Favor.'); return; }
+    request('game:play', { cardId: chosenCard.id, targetUserId: targetId }, () => { setSelected(null); setTargetId(null); });
   }
 
-  function playSelectedCards() {
-    if (!playStatus.valid || playedCard) return;
-    const cardsToPlay = [...selectedCards];
-    const indicesToRemove = new Set(selectedIndices);
-    setPlayedCard(cardsToPlay[0]);
-    window.setTimeout(() => {
-      setDiscard(cardsToPlay[cardsToPlay.length - 1]);
-      setHand((current) => current.filter((_, index) => !indicesToRemove.has(index)));
-      setSelectedIndices([]);
-      setPlayedCard(null);
-      onPlayCard({ cards: cardsToPlay, type: playStatus.type });
-    }, 640);
-  }
+  const discard = cards[game?.discardTop];
+  const currentPlayer = game?.players.find((player) => player.userId === game.currentPlayerId);
+  const pending = game?.pendingBombUserId === userId;
 
   return (
-    <section className="table">
+    <section className="table live-game-table">
       <header>
         <button className="circle" onClick={onHome} aria-label="Về menu"><Home /></button>
-        <div className="table-brand"><i>✦</i><b>{gameName}<small>PHÒNG CHỜ • BẢN XEM TRƯỚC</small></b></div>
-        <div className="tools">
-          <button className="circle" onClick={onToggleSound} aria-label="Âm thanh">{sound ? <Volume2 /> : <VolumeX />}</button>
-          <button className="circle" onClick={onToggleMusic} aria-label="Nhạc nền"><Music2 /></button>
-          <button className="circle" onClick={onSettings} aria-label="Cài đặt"><Settings /></button>
-        </div>
+        <div className="table-brand"><i>✦</i><b>{gameName}<small>{room?.code ?? 'ĐANG KẾT NỐI'} • VÁN TRỰC TUYẾN</small></b></div>
+        <div className="tools"><button className="circle" onClick={onToggleSound} aria-label="Âm thanh">{sound ? <Volume2 /> : <VolumeX />}</button><button className="circle" onClick={onToggleMusic} aria-label="Nhạc nền"><Music2 /></button><button className="circle" onClick={onSettings} aria-label="Cài đặt"><Settings /></button></div>
       </header>
 
-      <section className="felt">
-        <div className="seat top"><i>M</i><span><b>Mèo Máy</b><small>4 lá trên tay</small></span><em>▰ ▰ ▰</em></div>
-        <div className="seat left"><i>K</i><span><b>Khách Mời</b><small>5 lá trên tay</small></span><em>▰ ▰ ▰</em></div>
-        <div className="seat right"><i>L</i><span><b>LuckyCat</b><small>4 lá trên tay</small></span><em>▰ ▰ ▰</em></div>
-        <div className="center-table">
-          <label>●　LƯỢT CỦA BẠN</label>
-          <div className="piles">
-            <button className={`deck-stack ${drawing ? 'is-drawing' : ''}`} onClick={drawCard} aria-label="Rút một lá bài">
-              <span className="deck-layer layer-three" /><span className="deck-layer layer-two" /><span className="deck-layer layer-one" />
-              <span className="deck-front"><b>✦</b><strong>BỐC BÀI</strong><small>Rút 1 lá</small></span>
-            </button>
-            <div className="discard-pile"><small>BÀI ĐÃ ĐÁNH</small><img className="discard-image" src={discard.image} alt={discard.name} /></div>
+      <section className="felt live-felt">
+        {opponents.map((player, index) => <article key={player.userId} className={`live-seat live-seat-${index % 6} ${!player.alive ? 'player-out' : ''}`}><span className={`lobby-avatar av${index % 6}`}>{player.username.slice(0, 1).toLocaleUpperCase()}</span><b>{player.username}{player.isHost ? ' ✦' : ''}</b><small>{player.alive ? `${player.handCount} lá` : 'Đã bị loại'}</small>{player.userId === game?.currentPlayerId && <em>LƯỢT ĐANG CHƠI</em>}</article>)}
+        <div className="live-center">
+          <div className="turn-label">{!game ? 'ĐANG CHIA BÀI…' : isMyTurn ? '●　LƯỢT CỦA BẠN' : `●　LƯỢT ${currentPlayer?.username ?? 'ĐANG CHỜ'}`}</div>
+          <div className="live-piles">
+            <button className={`deck-stack live-deck ${isMyTurn && !busy ? 'deck-enabled' : ''}`} onClick={() => request('game:draw')} disabled={!isMyTurn || busy || !game?.drawPileCount} aria-label="Rút bài"><span className="deck-layer layer-three" /><span className="deck-layer layer-two" /><span className="deck-layer layer-one" /><span className="deck-front"><b>✦</b><strong>{game?.drawPileCount ?? '—'}</strong><small>LÁ CÒN LẠI</small></span></button>
+            <div className="discard-pile"><small>BÀI ĐÃ ĐÁNH</small>{discard ? <img className="discard-image" src={discard.image} alt={discard.name} /> : <div className="empty-discard">Chưa có bài bỏ</div>}</div>
           </div>
-          <small>Chọn bài để đánh hoặc bốc bài để kết thúc lượt</small>
+          {game?.pendingTurns > 0 && <span className="attack-turns">⚡ Bạn còn {game.pendingTurns} lượt</span>}
+          <small>{isMyTurn ? 'Đánh lá phù hợp hoặc rút bài để kết thúc lượt.' : game ? `Đang chờ ${currentPlayer?.username ?? 'người chơi'} thao tác.` : 'Đang kết nối máy chủ và nhận bài.'}</small>
         </div>
-        <footer>●　Đang chờ người chơi <span>MÃ PHÒNG　<b>{room?.code ?? 'MEO-2048'}</b></span></footer>
-        {drawing && drawingCard && <img className="draw-flight" src={drawingCard.image} alt={`Đang rút ${drawingCard.name}`} />}
-        {playedCard && <img className="play-flight" src={playedCard.image} alt={`Đang đánh ${playedCard.name}`} />}
+        <footer><span>{game?.players.filter((player) => player.alive).length ?? 0} người còn sống</span><span>MÃ PHÒNG　<b>{room?.code}</b></span></footer>
       </section>
 
-      {selectedCards.length > 0 && (
-        <aside className="card-detail">
-          <button className="detail-close" onClick={() => setSelectedIndices([])} aria-label="Đóng mô tả"><X size={15} /></button>
-          <img src={selectedCards[0].image} alt={selectedCards[0].name} />
-          <div>
-            <span>{selectedCards.length > 1 ? `${selectedCards.length} LÁ ĐANG CHỌN` : 'CHỨC NĂNG LÁ BÀI'}</span>
-            <h3>{playStatus.title}</h3>
-            <p>{playStatus.message}</p>
-            <button className="primary" onClick={playSelectedCards} disabled={!playStatus.valid || Boolean(playedCard)}>
-              {playStatus.valid ? 'Đánh bài' : 'Chưa thể đánh'} <ArrowRight size={15} />
-            </button>
-          </div>
-        </aside>
-      )}
+      {pending && <div className="bomb-prompt"><div><b>💣 Bạn rút trúng Mèo Nổ!</b><span>Đã dùng Gỡ Bom. Chọn vị trí bí mật đặt lại lá bom vào chồng bài.</span></div><div className="bomb-positions"><button onClick={() => request('game:reinsert', { position: 0 })}>Trên cùng</button><button onClick={() => request('game:reinsert', { position: Math.floor((game?.drawPileCount ?? 0) / 2) })}>Ở giữa</button><button onClick={() => request('game:reinsert', { position: game?.drawPileCount ?? 0 })}>Dưới cùng</button></div></div>}
+      {peek && <div className="peek-strip"><b>Ba lá trên cùng:</b>{peek.map((key, index) => <span key={`${key}-${index}`}>{cards[key]?.name ?? key}</span>)}<button onClick={() => setPeek(null)}>Đóng</button></div>}
+      {chosenCard && <aside className="card-detail live-card-detail"><img src={chosenInfo?.image} alt={chosenInfo?.name} /><div><span>CHỨC NĂNG LÁ BÀI</span><h3>{chosenInfo?.name}</h3><p>{chosenInfo?.description}</p>{chosenCard.key === 'favor' && <div className="target-picker">{opponents.filter((player) => player.alive && player.handCount > 0).map((player) => <button key={player.userId} className={targetId === player.userId ? 'target-selected' : ''} onClick={() => setTargetId(player.userId)}>{player.username}</button>)}</div>}<button className="primary" onClick={playSelected} disabled={!isMyTurn || busy || !['attack', 'skip', 'favor', 'seeTheFuture', 'shuffle'].includes(chosenCard.key)}>{busy ? 'Đang xử lý…' : isMyTurn ? 'Đánh lá này' : 'Chưa tới lượt'} <ArrowRight size={15} /></button></div></aside>}
 
-      <section className="hand">
-        <div className="hand-title">BÀI CỦA BẠN　<b>{hand.length}</b><span><button onClick={() => setGuideOpen(true)}><CircleHelp size={14} /> Hướng dẫn</button></span></div>
-        <div className="cards">
-          {hand.map((card, index) => (
-            <button key={`${card.name}-${index}`} className={`playing-card asset-card ${selectedIndices.includes(index) ? 'chosen' : ''}`} onClick={() => selectCard(index)} aria-pressed={selectedIndices.includes(index)} aria-label={`Chọn ${card.name}`}>
-              <img src={card.image} alt={card.name} />
-            </button>
-          ))}
-        </div>
-        <div className="actions"><button className="secondary" onClick={drawCard}>↧　Bốc bài</button><button className="primary" onClick={drawCard}>Rút bài kết thúc lượt <ArrowRight size={16} /></button></div>
-      </section>
+      <section className="hand live-hand"><div className="hand-title">BÀI CỦA {me?.username?.toLocaleUpperCase() ?? 'BẠN'}　<b>{hand.length}</b><span><button onClick={() => setGuideOpen(true)}><CircleHelp size={14} /> Hướng dẫn</button></span></div><div className="cards">{hand.map((card) => { const info = cardInfo(card); return info ? <button key={card.id} className={`playing-card asset-card ${selected === card.id ? 'chosen' : ''}`} onClick={() => toggleCard(card)} aria-pressed={selected === card.id} aria-label={`Chọn ${info.name}`}><img src={info.image} alt={info.name} /></button> : null; })}</div><div className="actions"><button className="secondary" onClick={() => request('game:draw')} disabled={!isMyTurn || busy}>↧　Bốc bài</button><span>{game?.status === 'finished' ? `Người thắng: ${game.players.find((player) => player.userId === game.winnerId)?.username ?? ''}` : isMyTurn ? 'Đến lượt của bạn' : 'Đang chờ lượt'}</span></div></section>
       {guideOpen && <RulesGuide onClose={() => setGuideOpen(false)} />}
     </section>
   );

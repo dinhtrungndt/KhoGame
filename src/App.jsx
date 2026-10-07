@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, Check, Sparkles, X } from 'lucide-react';
 import AuthPage from './pages/AuthPage.jsx';
 import LobbyPage from './pages/LobbyPage.jsx';
@@ -35,10 +35,10 @@ export default function App() {
     setPage('lobby');
   }
 
-  function showNotice(message) {
+  const showNotice = useCallback((message) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 1900);
-  }
+  }, []);
 
   async function logout() {
     setLoggingOut(true);
@@ -68,6 +68,8 @@ export default function App() {
     setRoom(nextRoom);
     setPage('roomLobby');
   }
+
+  const startRoomGame = useCallback(() => setPage('table'), []);
 
   async function leaveCurrentRoom() {
     await api.leaveRoom(room.code);
@@ -115,7 +117,7 @@ export default function App() {
         />
       )}
       {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} />}
-      {page === 'roomLobby' && room && <RoomLobby room={room} onLeave={leaveCurrentRoom} />}
+      {page === 'roomLobby' && room && <RoomLobby room={room} onLeave={leaveCurrentRoom} onStartGame={startRoomGame} />}
       {page === 'table' && (
         <GameTable
           room={room}
@@ -126,8 +128,7 @@ export default function App() {
           onToggleMusic={() => setMusic(!music)}
           onHome={() => setPage('lobby')}
           onSettings={() => setModal('settings')}
-          onDraw={() => showNotice('Bản chơi thử: thao tác rút bài chưa nối luật.')}
-          onPlayCard={({ cards, type }) => showNotice(`Đã đánh ${cards.length} lá (${type}) trong bản xem trước.`)}
+          onGameNotice={showNotice}
         />
       )}
 
