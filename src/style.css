@@ -2370,6 +2370,13 @@ button {
 .play-flight-card{position:absolute;left:calc(50% + var(--fan-offset));top:calc(100vh - 145px);width:clamp(62px,7vw,94px);aspect-ratio:2/3;object-fit:cover;border:2px solid #fff2d5;border-radius:9px;box-shadow:0 12px 32px #0008;transform-origin:center;animation:hand-to-pile .78s cubic-bezier(.18,.72,.25,1) var(--flight-delay) both}
 @keyframes face-down-fan{from{opacity:0;transform:translateY(34px) rotate(-8deg) scale(.72)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
 @keyframes hand-to-pile{0%{opacity:0;transform:translate(-50%,0) rotate(calc(var(--fan-offset)*.06)) scale(.62)}12%{opacity:1}72%{opacity:1}100%{opacity:0;transform:translate(-50%,-47vh) rotate(0) scale(.92)}}
+.live-seat.is-current-turn{border-color:#ffe08a;box-shadow:0 0 0 2px #ffe08a44,0 0 26px #ffe08a66,0 7px 20px #0018;animation:active-seat-pulse 1.25s ease-in-out infinite alternate}
+.discard-image.card-landing{animation:discard-card-land .42s cubic-bezier(.18,.85,.28,1.35) both;transform-origin:center}
+.live-hand .playing-card.card-received{animation:received-card-pop .55s cubic-bezier(.18,1.45,.35,1) both}
+@keyframes active-seat-pulse{to{box-shadow:0 0 0 4px #ffe08a24,0 0 34px #ffe08a8c,0 7px 20px #0018}}
+@keyframes discard-card-land{0%{opacity:0;transform:translateY(-28px) rotate(-14deg) scale(1.2)}68%{opacity:1;transform:translateY(3px) rotate(3deg) scale(.94)}100%{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
+@keyframes received-card-pop{0%{opacity:.4;transform:translateY(-34px) rotate(8deg) scale(.88);filter:brightness(1.7)}70%{opacity:1;transform:translateY(4px) rotate(-2deg) scale(1.04);filter:brightness(1.15)}100%{transform:translateY(0) rotate(0) scale(1);filter:none}}
+@media(prefers-reduced-motion:reduce){.play-flight-card,.combo-hidden-card,.discard-image.card-landing,.live-hand .playing-card.card-received,.live-seat.is-current-turn{animation-duration:.01ms!important;animation-iteration-count:1!important}}
 .combo-offer-card{flex:0 0 clamp(82px,10vw,118px);display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px;border:1px solid #ffffff35;border-radius:12px;background:#ffffff0c;color:#fff;cursor:pointer;transition:transform .2s,border-color .2s}.combo-offer-card:hover:not(:disabled){transform:translateY(-8px);border-color:#f4d180}.combo-offer-card img{width:100%;height:clamp(124px,23vh,175px);object-fit:contain;border-radius:8px;background:#e9e4d9}.combo-offer-card small{font-size:10px;color:#f4d180}
 @media(max-width:600px){.combo-choice-modal{padding:18px 10px;border-radius:17px}.combo-choice-cards{justify-content:flex-start;min-height:155px}.combo-hidden-card{flex-basis:68px;height:112px}.combo-offer-card{flex-basis:76px}.combo-offer-card img{height:116px}}
 @media(prefers-reduced-motion:reduce){.combo-choice-overlay,.combo-choice-modal,.combo-hidden-card{animation-duration:.01ms!important;animation-delay:0ms!important}}
@@ -2415,11 +2422,15 @@ button {
 .victory-card p b { color: #fff; }
 .victory-confetti { margin: 20px 0; font-size: 24px; letter-spacing: .12em; animation: confetti-wiggle .8s ease-in-out infinite alternate; }
 .victory-card .primary { min-width: 150px; justify-content: center; }
+.victory-card .restart-game-button { min-width: 220px; min-height: 52px; margin-top: 4px; border: 1px solid #ffe7a4; background: linear-gradient(120deg,#ffe38e,#f39b43); color: #40230c; box-shadow: 0 0 30px #ffca5d55,0 5px 0 #8e4b20; font-weight: 950; letter-spacing: .06em; animation: restart-ready-glow 1.2s ease-in-out infinite alternate; }
+.victory-card .restart-game-button:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); box-shadow: 0 0 42px #ffe08a99,0 7px 0 #8e4b20; }
+.restart-waiting { display: block; margin-top: 12px; color: #bfe4d1; font-size: 13px; }
 .victory-fireworks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .victory-fireworks i { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: hsl(var(--spark-hue) 100% 68%); box-shadow: 0 0 12px 3px hsl(var(--spark-hue) 100% 60% / .8); opacity: 0; animation: firework-spark 1.7s ease-out var(--spark-delay) infinite; }
 @keyframes victory-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes victory-shake { 0%,100% { transform: translate(0,0) rotate(0); } 25% { transform: translate(-4px,2px) rotate(-.15deg); } 50% { transform: translate(4px,-2px) rotate(.15deg); } 75% { transform: translate(-3px,-1px) rotate(-.1deg); } }
 @keyframes victory-card-pop { from { opacity: 0; transform: translateY(30px) scale(.78) rotate(-2deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+@keyframes restart-ready-glow { to { filter: brightness(1.11); box-shadow: 0 0 40px #ffe08a99,0 5px 0 #8e4b20; } }
 @keyframes firework-spark { 0% { opacity: 0; transform: translate(0,0) scale(.25); } 12% { opacity: 1; } 75% { opacity: .85; } 100% { opacity: 0; transform: translate(var(--burst-x),var(--burst-y)) scale(.05); } }
 @keyframes confetti-wiggle { from { transform: rotate(-4deg) scale(.96); } to { transform: rotate(4deg) scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .victory-overlay, .victory-card, .victory-fireworks i, .victory-confetti { animation-duration: .01ms; animation-iteration-count: 1; } }
