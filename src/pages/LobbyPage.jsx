@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, Gamepad2, LogOut, Shield } from 'lucide-react';
+import { ArrowRight, Download, LogOut, Shield } from 'lucide-react';
+import logo from '../assets/logo/tsa.png';
 
 const games = [
   {
@@ -20,14 +21,14 @@ const games = [
   },
 ];
 
-export default function LobbyPage({ username, selectedGame, onSelect, onContinue, onLogout, loggingOut }) {
+export default function LobbyPage({ username, selectedGame, onSelect, onContinue, onLogout, loggingOut, onInstall }) {
   const game = games.find((item) => item.id === selectedGame) ?? games[0];
 
   return (
     <section className="lobby">
       <header>
-        <div className="brand"><i><Gamepad2 /></i>KHO<span>GAME</span><small>BETA</small></div>
-        <div className="profile-actions"><span className="profile">●　{username || 'Bạn chơi'}</span><button className="logout-button" onClick={onLogout} disabled={loggingOut}><LogOut size={15} />{loggingOut ? 'Đang đăng xuất…' : 'Đăng xuất'}</button></div>
+        <div className="brand"><i><img src={logo} alt="" /></i>KHO<span>GAME</span><small>BETA</small></div>
+        <div className="profile-actions"><button className="install-button" onClick={onInstall}><Download size={14} /> Thêm vào màn hình chính</button><span className="profile">●　{username || 'Bạn chơi'}</span><button className="logout-button" onClick={onLogout} disabled={loggingOut}><LogOut size={15} />{loggingOut ? 'Đang đăng xuất…' : 'Đăng xuất'}</button></div>
       </header>
       <article className="lobby-content">
         <div className="center">

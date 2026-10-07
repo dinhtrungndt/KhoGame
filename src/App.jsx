@@ -22,6 +22,25 @@ export default function App() {
   const [notice, setNotice] = useState('');
   const [sound, setSound] = useState(true);
   const [music, setMusic] = useState(true);
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    const captureInstallPrompt = (event) => { event.preventDefault(); setInstallPrompt(event); };
+    const onInstalled = () => setInstallPrompt(null);
+    window.addEventListener('beforeinstallprompt', captureInstallPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', captureInstallPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  async function installApp() {
+    if (!installPrompt) { setModal('install-help'); return; }
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    if (choice?.outcome === 'accepted') setInstallPrompt(null);
+  }
 
   useEffect(() => {
     if (resetToken) return;
@@ -121,6 +140,7 @@ export default function App() {
           onContinue={authenticate}
           onRecover={() => setModal('recovery')}
           onHelp={() => setModal('help')}
+          onInstall={installApp}
         />
       )}
       {page === 'lobby' && (
@@ -131,6 +151,7 @@ export default function App() {
           selectedGame={selectedGame}
           onSelect={(game) => { setSelectedGame(game); if (game === 'cat') setPage('rooms'); }}
           onContinue={continueFromLobby}
+          onInstall={installApp}
         />
       )}
       {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} />}
@@ -155,7 +176,7 @@ export default function App() {
           <section className="modal" onClick={(event) => event.stopPropagation()}>
             <button className="x" onClick={() => setModal('')} aria-label="Đóng"><X /></button>
             <Sparkles />
-            <h3>{modal === 'recovery' ? 'Khôi phục mật khẩu' : modal === 'password-reset' ? 'Đổi mật khẩu thành công' : modal === 'recovery-sent' ? 'Đã ghi nhận yêu cầu' : modal === 'rules' ? 'Hướng dẫn luật chơi' : modal === 'settings' ? 'Cài đặt' : 'Thông tin'}</h3>
+            <h3>{modal === 'recovery' ? 'Khôi phục mật khẩu' : modal === 'password-reset' ? 'Đổi mật khẩu thành công' : modal === 'recovery-sent' ? 'Đã ghi nhận yêu cầu' : modal === 'rules' ? 'Hướng dẫn luật chơi' : modal === 'settings' ? 'Cài đặt' : modal === 'install-help' ? 'Thêm Kho Game vào màn hình chính' : 'Thông tin'}</h3>
             {modal === 'recovery' ? (
               <>
                 <p>Nhập email đã dùng khi đăng ký để nhận liên kết khôi phục mật khẩu.</p>
@@ -167,7 +188,7 @@ export default function App() {
               </>
             ) : (
               <>
-                <p>{modal === 'recovery-sent' ? 'Nếu email tồn tại trong hệ thống, liên kết khôi phục sẽ được gửi đến hộp thư của bạn.' : modal === 'password-reset' ? 'Mật khẩu mới đã được lưu. Bạn có thể đăng nhập bằng mật khẩu vừa đặt.' : 'Đây là bản giao diện thử nghiệm. Luật chơi và cài đặt sẽ được hoàn thiện ở bước tiếp theo.'}</p>
+                <p>{modal === 'recovery-sent' ? 'Nếu email tồn tại trong hệ thống, liên kết khôi phục sẽ được gửi đến hộp thư của bạn.' : modal === 'password-reset' ? 'Mật khẩu mới đã được lưu. Bạn có thể đăng nhập bằng mật khẩu vừa đặt.' : modal === 'install-help' ? ((/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) ? 'Trên Safari, nhấn nút Chia sẻ, chọn Thêm vào MH chính rồi nhấn Thêm.' : 'Mở menu của trình duyệt rồi chọn Cài đặt ứng dụng hoặc Thêm vào màn hình chính. Trên iPhone/iPad, hãy mở trang bằng Safari và dùng nút Chia sẻ.') : 'Đây là bản giao diện thử nghiệm. Luật chơi và cài đặt sẽ được hoàn thiện ở bước tiếp theo.'}</p>
                 <button className="primary" onClick={() => setModal('')}>Đã hiểu <Check size={16} /></button>
               </>
             )}

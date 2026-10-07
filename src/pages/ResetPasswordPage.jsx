@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ArrowRight, Eye, EyeOff, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import logo from '../assets/logo/tsa.png';
 
 export default function ResetPasswordPage({ onSubmit, onBack }) {
   const [password, setPassword] = useState('');
@@ -21,7 +22,7 @@ export default function ResetPasswordPage({ onSubmit, onBack }) {
   return (
     <section className="reset-page">
       <div className="reset-box">
-        <div className="mini-brand"><Gamepad2 /> KHO GAME</div>
+        <div className="mini-brand"><img src={logo} alt="" /> KHO GAME</div>
         <button className="back-link" onClick={onBack}><ArrowLeft size={16} /> Quay lại đăng nhập</button>
         <label className="kicker">BẢO MẬT TÀI KHOẢN</label>
         <h1>Đặt mật khẩu mới</h1>

@@ -2434,3 +2434,16 @@ button {
 @keyframes firework-spark { 0% { opacity: 0; transform: translate(0,0) scale(.25); } 12% { opacity: 1; } 75% { opacity: .85; } 100% { opacity: 0; transform: translate(var(--burst-x),var(--burst-y)) scale(.05); } }
 @keyframes confetti-wiggle { from { transform: rotate(-4deg) scale(.96); } to { transform: rotate(4deg) scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .victory-overlay, .victory-card, .victory-fireworks i, .victory-confetti { animation-duration: .01ms; animation-iteration-count: 1; } }
+
+/* Kho Game brand and install controls */
+.brand i { overflow: hidden; background: #f1f8f1; border-color: #ffffff80; }
+.brand i img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+.mini-brand img { width: 28px; height: 28px; object-fit: contain; padding: 2px; border-radius: 8px; background: #f1f8f1; }
+.install-button, .auth-footer-actions button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #ffffff1b; border-radius: 20px; padding: 8px 11px; color: #c5d5ca; background: #ffffff08; font-size: 10px; cursor: pointer; }
+.install-button:hover, .auth-footer-actions button:hover { border-color: #58ce97; color: #8fe6b7; background: #2ab7781f; }
+.auth-footer-actions { display: flex; gap: 8px; }
+.auth-footer-actions button { border: 0; padding: 4px 6px; background: transparent; }
+@media (max-width: 620px) { .install-button { padding: 8px; font-size: 0; } .install-button svg { width: 17px; height: 17px; } .auth-footer-actions { gap: 3px; } .auth-footer-actions button { font-size: 9px; } }
+
+.table-brand>i { overflow: hidden; background: #f1f8f1; }
+.table-brand>i img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }

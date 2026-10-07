@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowRight, Eye, EyeOff, Gamepad2, Shield } from 'lucide-react';
+import { ArrowRight, Download, Eye, EyeOff, Shield } from 'lucide-react';
+import logo from '../assets/logo/tsa.png';
 import { cards } from '../data/cards.js';
 
-export default function AuthPage({ onContinue, onRecover, onHelp }) {
+export default function AuthPage({ onContinue, onRecover, onHelp, onInstall }) {
   const [mode, setMode] = useState('login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -24,7 +25,7 @@ export default function AuthPage({ onContinue, onRecover, onHelp }) {
     <section className="auth">
       <aside className="hero">
         <div className="brand">
-          <i><Gamepad2 /></i>KHO<span>GAME</span><small>BETA</small>
+          <i><img src={logo} alt="" /></i>KHO<span>GAME</span><small>BETA</small>
         </div>
         <div className="hero-copy">
           <label>✧　PHÒNG CHƠI CỦA BẠN</label>
@@ -40,7 +41,7 @@ export default function AuthPage({ onContinue, onRecover, onHelp }) {
       </aside>
 
       <section className="auth-side">
-        <div className="mini-brand"><Gamepad2 /> KHO GAME</div>
+        <div className="mini-brand"><img src={logo} alt="" /> KHO GAME</div>
         <div className="auth-box">
           <label className="kicker">CHÀO MỪNG BẠN ĐẾN VỚI KHO GAME</label>
           <h2>{mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}</h2>
@@ -97,7 +98,7 @@ export default function AuthPage({ onContinue, onRecover, onHelp }) {
           </div>
           <div className="terms">Tiếp tục đồng nghĩa bạn đồng ý với Điều khoản và Chính sách riêng tư.</div>
         </div>
-        <footer><span>© 2026 Kho Game</span><button onClick={onHelp}>Trợ giúp</button></footer>
+        <footer><span>© 2026 Kho Game</span><div className="auth-footer-actions"><button onClick={onInstall}><Download size={13} /> Thêm vào màn hình chính</button><button onClick={onHelp}>Trợ giúp</button></div></footer>
       </section>
     </section>
   );

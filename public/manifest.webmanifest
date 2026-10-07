@@ -1,0 +1,24 @@
+{
+  "name": "Kho Game",
+  "short_name": "Kho Game",
+  "description": "Chơi game cùng bạn bè trên Kho Game",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e1714",
+  "theme_color": "#10271e",
+  "icons": [
+    {
+      "src": "/icons_tsa.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/tsa.png",
+      "sizes": "768x768",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

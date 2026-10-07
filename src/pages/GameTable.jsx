@@ -4,6 +4,7 @@ import { cards } from '../data/cards.js';
 import { createGameSocket } from '../realtime.js';
 import RulesGuide from './RulesGuide.jsx';
 import { playSfx } from '../audio.js';
+import logo from '../assets/logo/tsa.png';
 
 const cardInfo = (card) => cards[card?.key] || null;
 const seatPoint = (index, total) => {
@@ -221,7 +222,7 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
     <section className="table live-game-table">
       <header>
         <button className="circle" onClick={onHome} aria-label="Về menu"><Home /></button>
-        <div className="table-brand"><i>✦</i><b>{gameName}<small>{room?.code ?? 'ĐANG KẾT NỐI'} • VÁN TRỰC TUYẾN</small></b></div>
+        <div className="table-brand"><i><img src={logo} alt="" /></i><b>{gameName}<small>{room?.code ?? 'ĐANG KẾT NỐI'} • VÁN TRỰC TUYẾN</small></b></div>
         <div className="tools"><button className="circle" onClick={onToggleSound} aria-label={sound ? 'Tắt hiệu ứng âm thanh' : 'Bật hiệu ứng âm thanh'} aria-pressed={sound}>{sound ? <Volume2 /> : <VolumeX />}</button><button className={`circle ${music ? '' : 'muted'}`} onClick={onToggleMusic} aria-label={music ? 'Tắt nhạc nền' : 'Bật nhạc nền'} aria-pressed={music}><Music2 /></button><button className="circle" onClick={onSettings} aria-label="Cài đặt"><Settings /></button></div>
       </header>
 
