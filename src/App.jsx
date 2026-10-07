@@ -1,24 +1,57 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check, Sparkles, X } from 'lucide-react';
 import AuthPage from './pages/AuthPage.jsx';
 import LobbyPage from './pages/LobbyPage.jsx';
 import GameTable from './pages/GameTable.jsx';
 import Rooms from './Rooms.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
+import { api } from './api.js';
 
 export default function App() {
-  const [page, setPage] = useState('auth');
+  const resetToken = new URLSearchParams(window.location.search).get('token');
+  const [page, setPage] = useState(resetToken ? 'reset' : 'auth');
   const [username, setUsername] = useState('');
+  const [loggingOut, setLoggingOut] = useState(false);
   const [selectedGame, setSelectedGame] = useState('cat');
   const [room, setRoom] = useState(null);
   const [modal, setModal] = useState('');
   const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [recoveryError, setRecoveryError] = useState('');
   const [notice, setNotice] = useState('');
   const [sound, setSound] = useState(true);
   const [music, setMusic] = useState(true);
 
+  useEffect(() => {
+    if (resetToken) return;
+    api.me().then(({ user }) => { setUsername(user.username); setPage('lobby'); }).catch(() => {});
+  }, []);
+
+  async function authenticate(credentials) {
+    const result = credentials.mode === 'register'
+      ? await api.register(credentials)
+      : await api.login(credentials);
+    setUsername(result.user.username);
+    setPage('lobby');
+  }
+
   function showNotice(message) {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 1900);
+  }
+
+  async function logout() {
+    setLoggingOut(true);
+    try {
+      await api.logout();
+      setUsername('');
+      setRoom(null);
+      setPage('auth');
+      showNotice('Bạn đã đăng xuất.');
+    } catch (error) {
+      showNotice(error.message);
+    } finally {
+      setLoggingOut(false);
+    }
   }
 
   function continueFromLobby() {
@@ -36,17 +69,31 @@ export default function App() {
     showNotice('Đã vào phòng xem trước');
   }
 
-  function submitRecovery(event) {
+  async function resetPassword(password) {
+    await api.resetPassword(resetToken, password);
+    window.history.replaceState({}, '', '/');
+    setPage('auth');
+    setModal('password-reset');
+  }
+
+  async function submitRecovery(event) {
     event.preventDefault();
-    setModal('recovery-sent');
+    setRecoveryError('');
+    try {
+      await api.forgotPassword(recoveryEmail);
+      setModal('recovery-sent');
+    } catch (error) {
+      setRecoveryError(error.message);
+    }
   }
 
   return (
     <main className="app">
       <div className="orb" />
+      {page === 'reset' && <ResetPasswordPage onSubmit={resetPassword} onBack={() => { window.history.replaceState({}, '', '/'); setPage('auth'); }} />}
       {page === 'auth' && (
         <AuthPage
-          onContinue={(value) => { setUsername(value); setPage('lobby'); }}
+          onContinue={authenticate}
           onRecover={() => setModal('recovery')}
           onHelp={() => setModal('help')}
         />
@@ -54,6 +101,8 @@ export default function App() {
       {page === 'lobby' && (
         <LobbyPage
           username={username}
+          loggingOut={loggingOut}
+          onLogout={logout}
           selectedGame={selectedGame}
           onSelect={(game) => { setSelectedGame(game); if (game === 'cat') setPage('rooms'); }}
           onContinue={continueFromLobby}
@@ -81,18 +130,19 @@ export default function App() {
           <section className="modal" onClick={(event) => event.stopPropagation()}>
             <button className="x" onClick={() => setModal('')} aria-label="Đóng"><X /></button>
             <Sparkles />
-            <h3>{modal === 'recovery' ? 'Khôi phục mật khẩu' : modal === 'recovery-sent' ? 'Đã ghi nhận yêu cầu' : modal === 'rules' ? 'Hướng dẫn luật chơi' : modal === 'settings' ? 'Cài đặt' : 'Thông tin'}</h3>
+            <h3>{modal === 'recovery' ? 'Khôi phục mật khẩu' : modal === 'password-reset' ? 'Đổi mật khẩu thành công' : modal === 'recovery-sent' ? 'Đã ghi nhận yêu cầu' : modal === 'rules' ? 'Hướng dẫn luật chơi' : modal === 'settings' ? 'Cài đặt' : 'Thông tin'}</h3>
             {modal === 'recovery' ? (
               <>
-                <p>Nhập email đã dùng khi đăng ký. Gửi email khôi phục sẽ hoạt động sau khi nối backend.</p>
+                <p>Nhập email đã dùng khi đăng ký để nhận liên kết khôi phục mật khẩu.</p>
                 <form className="recover-form" onSubmit={submitRecovery}>
                   <input type="email" autoComplete="email" placeholder="ban@email.com" value={recoveryEmail} onChange={(event) => setRecoveryEmail(event.target.value)} required />
+                  {recoveryError && <div className="auth-error" role="alert">{recoveryError}</div>}
                   <button className="primary">Gửi yêu cầu <ArrowRight size={16} /></button>
                 </form>
               </>
             ) : (
               <>
-                <p>{modal === 'recovery-sent' ? 'Yêu cầu đã được ghi nhận trong bản xem trước; tính năng gửi email chưa được kết nối.' : 'Đây là bản giao diện thử nghiệm. Luật chơi và cài đặt sẽ được hoàn thiện ở bước tiếp theo.'}</p>
+                <p>{modal === 'recovery-sent' ? 'Nếu email tồn tại trong hệ thống, liên kết khôi phục sẽ được gửi đến hộp thư của bạn.' : modal === 'password-reset' ? 'Mật khẩu mới đã được lưu. Bạn có thể đăng nhập bằng mật khẩu vừa đặt.' : 'Đây là bản giao diện thử nghiệm. Luật chơi và cài đặt sẽ được hoàn thiện ở bước tiếp theo.'}</p>
                 <button className="primary" onClick={() => setModal('')}>Đã hiểu <Check size={16} /></button>
               </>
             )}

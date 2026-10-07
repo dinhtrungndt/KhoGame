@@ -5,11 +5,19 @@ import { cards } from '../data/cards.js';
 export default function AuthPage({ onContinue, onRecover, onHelp }) {
   const [mode, setMode] = useState('login');
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   function submit(event) {
     event.preventDefault();
-    onContinue(username.trim());
+    setLoading(true);
+    setError('');
+    onContinue({ mode, username: username.trim(), email: email.trim(), password })
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -52,7 +60,7 @@ export default function AuthPage({ onContinue, onRecover, onHelp }) {
             {mode === 'register' && (
               <label>
                 Email khôi phục
-                <input type="email" autoComplete="email" placeholder="ban@email.com" required />
+                <input type="email" autoComplete="email" placeholder="ban@email.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
               </label>
             )}
             <label>
@@ -61,8 +69,10 @@ export default function AuthPage({ onContinue, onRecover, onHelp }) {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  placeholder="Ít nhất 6 ký tự"
-                  minLength={6}
+                  placeholder="Ít nhất 8 ký tự"
+                  minLength={8}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                   required
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Hiện hoặc ẩn mật khẩu">
@@ -73,14 +83,15 @@ export default function AuthPage({ onContinue, onRecover, onHelp }) {
             {mode === 'login' && (
               <button type="button" className="forgot" onClick={onRecover}>Quên mật khẩu?</button>
             )}
-            <button className="primary" type="submit">
-              {mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={17} />
+            <button className="primary" type="submit" disabled={loading}>
+              {loading ? 'Đang xử lý...' : mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'} <ArrowRight size={17} />
             </button>
           </form>
+          {error && <div className="auth-error" role="alert">{error}</div>}
 
           <div className="switch">
             {mode === 'login' ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
-            <button onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
+            <button onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError(''); }}>
               {mode === 'login' ? 'Đăng ký' : 'Đăng nhập'}
             </button>
           </div>
