@@ -1,0 +1,108 @@
+import React, { useState } from 'react';
+import { ArrowRight, Check, Sparkles, X } from 'lucide-react';
+import AuthPage from './pages/AuthPage.jsx';
+import LobbyPage from './pages/LobbyPage.jsx';
+import GameTable from './pages/GameTable.jsx';
+import Rooms from './Rooms.jsx';
+
+export default function App() {
+  const [page, setPage] = useState('auth');
+  const [username, setUsername] = useState('');
+  const [selectedGame, setSelectedGame] = useState('cat');
+  const [room, setRoom] = useState(null);
+  const [modal, setModal] = useState('');
+  const [recoveryEmail, setRecoveryEmail] = useState('');
+  const [notice, setNotice] = useState('');
+  const [sound, setSound] = useState(true);
+  const [music, setMusic] = useState(true);
+  const [selectedCard, setSelectedCard] = useState(-1);
+
+  function showNotice(message) {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 1900);
+  }
+
+  function continueFromLobby() {
+    if (selectedGame === 'cat') {
+      setPage('rooms');
+      return;
+    }
+    setPage('table');
+    showNotice('Bản giao diện xem trước');
+  }
+
+  function joinRoom(nextRoom) {
+    setRoom(nextRoom);
+    setPage('table');
+    showNotice('Đã vào phòng xem trước');
+  }
+
+  function submitRecovery(event) {
+    event.preventDefault();
+    setModal('recovery-sent');
+  }
+
+  return (
+    <main className="app">
+      <div className="orb" />
+      {page === 'auth' && (
+        <AuthPage
+          onContinue={(value) => { setUsername(value); setPage('lobby'); }}
+          onRecover={() => setModal('recovery')}
+          onHelp={() => setModal('help')}
+        />
+      )}
+      {page === 'lobby' && (
+        <LobbyPage
+          username={username}
+          selectedGame={selectedGame}
+          onSelect={(game) => { setSelectedGame(game); if (game === 'cat') setPage('rooms'); }}
+          onContinue={continueFromLobby}
+        />
+      )}
+      {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} />}
+      {page === 'table' && (
+        <GameTable
+          room={room}
+          gameName={selectedGame === 'cat' ? 'Mèo Nổ' : 'UNO'}
+          sound={sound}
+          music={music}
+          onToggleSound={() => setSound(!sound)}
+          onToggleMusic={() => setMusic(!music)}
+          onHome={() => setPage('lobby')}
+          onHelp={() => setModal('rules')}
+          onSettings={() => setModal('settings')}
+          onDraw={() => showNotice('Bản chơi thử: thao tác rút bài chưa nối luật.')}
+          onPlayCard={(index) => { setSelectedCard(index); showNotice('Đã chọn lá bài trong bản xem trước.'); }}
+          selectedCard={selectedCard}
+          onEndTurn={() => showNotice('Bản chơi thử chưa xử lý lượt.')}
+        />
+      )}
+
+      {notice && <div className="toast"><Check size={16} />{notice}</div>}
+      {modal && (
+        <div className="scrim" onClick={() => setModal('')}>
+          <section className="modal" onClick={(event) => event.stopPropagation()}>
+            <button className="x" onClick={() => setModal('')} aria-label="Đóng"><X /></button>
+            <Sparkles />
+            <h3>{modal === 'recovery' ? 'Khôi phục mật khẩu' : modal === 'recovery-sent' ? 'Đã ghi nhận yêu cầu' : modal === 'rules' ? 'Hướng dẫn luật chơi' : modal === 'settings' ? 'Cài đặt' : 'Thông tin'}</h3>
+            {modal === 'recovery' ? (
+              <>
+                <p>Nhập email đã dùng khi đăng ký. Gửi email khôi phục sẽ hoạt động sau khi nối backend.</p>
+                <form className="recover-form" onSubmit={submitRecovery}>
+                  <input type="email" autoComplete="email" placeholder="ban@email.com" value={recoveryEmail} onChange={(event) => setRecoveryEmail(event.target.value)} required />
+                  <button className="primary">Gửi yêu cầu <ArrowRight size={16} /></button>
+                </form>
+              </>
+            ) : (
+              <>
+                <p>{modal === 'recovery-sent' ? 'Yêu cầu đã được ghi nhận trong bản xem trước; tính năng gửi email chưa được kết nối.' : 'Đây là bản giao diện thử nghiệm. Luật chơi và cài đặt sẽ được hoàn thiện ở bước tiếp theo.'}</p>
+                <button className="primary" onClick={() => setModal('')}>Đã hiểu <Check size={16} /></button>
+              </>
+            )}
+          </section>
+        </div>
+      )}
+    </main>
+  );
+}

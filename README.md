@@ -1,7 +1,20 @@
 # Kho Game UI
 
-React frontend-only prototype with login/register, a game selection lobby and a responsive landscape table preview.
+React + Vite frontend prototype for a landscape-first card game hub.
 
-Run `npm install`, then `npm run dev`.
+## Run locally
 
-Authentication, rooms, multiplayer and game rules are demo placeholders. Card art is CSS-created. Review branding and assets before any public release.
+```bash
+npm install
+npm run dev
+```
+
+## Structure
+
+- `src/App.jsx`: top-level navigation and demo state
+- `src/pages/`: authentication, game lobby, and table screens
+- `src/Rooms.jsx`: create/find/quick-join room screens
+- `src/data/cards.js`: card image catalog sourced from `src/assets/meono/coban`
+- `src/style.css`: responsive visual styles
+
+Login, password recovery, room listings, and card actions are presentation-only until a backend and game rules are connected.
