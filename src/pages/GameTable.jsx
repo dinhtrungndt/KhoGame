@@ -112,28 +112,24 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
       dealTimer.current = window.setTimeout(() => setDealing(false), 700 + sequence.length * 48);
     });
     connection.on('game:private', (data) => {
-      setUserId((currentId) => {
-        if (currentId == null || currentId === data.userId) {
-          userIdRef.current = data.userId;
-          const nextHand = data.hand || [];
-          if (lastHandSize.current !== null && nextHand.length > lastHandSize.current) playSfx('draw', soundRef.current);
-          lastHandSize.current = nextHand.length;
-          if (data.pendingBomb && !lastBomb.current) playSfx('bomb', soundRef.current);
-          if (!data.pendingBomb && lastBomb.current) playSfx('defuse', soundRef.current);
-          lastBomb.current = Boolean(data.pendingBomb);
-          setHand(nextHand);
-          setSelectedIds((ids) => ids.filter((id) => nextHand.some((card) => card.id === id)));
-          setPendingBomb(data.pendingBomb || null);
-          setPendingCombo(data.pendingCombo || null);
-          if (data.peek) {
-            setPeek(data.peek);
-            window.clearTimeout(peekTimer.current);
-            peekTimer.current = window.setTimeout(() => setPeek(null), 8000);
-          }
-          return data.userId;
-        }
-        return currentId;
-      });
+      if (userIdRef.current != null && userIdRef.current !== data.userId) return;
+      userIdRef.current = data.userId;
+      setUserId(data.userId);
+      const nextHand = data.hand || [];
+      if (lastHandSize.current !== null && nextHand.length > lastHandSize.current) playSfx('draw', soundRef.current);
+      lastHandSize.current = nextHand.length;
+      if (data.pendingBomb && !lastBomb.current) playSfx('bomb', soundRef.current);
+      if (!data.pendingBomb && lastBomb.current) playSfx('defuse', soundRef.current);
+      lastBomb.current = Boolean(data.pendingBomb);
+      setHand(nextHand);
+      setSelectedIds((ids) => ids.filter((id) => nextHand.some((card) => card.id === id)));
+      setPendingBomb(data.pendingBomb || null);
+      setPendingCombo(data.pendingCombo || null);
+      if (data.peek) {
+        setPeek(data.peek);
+        window.clearTimeout(peekTimer.current);
+        peekTimer.current = window.setTimeout(() => setPeek(null), 8000);
+      }
     });
     connection.on('connect_error', (error) => onGameNotice?.(error.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập đã hết hạn.' : 'Mất kết nối với bàn chơi.'));
     connection.connect();
