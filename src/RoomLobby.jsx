@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Check, Copy, DoorOpen, Maximize2, Minimize2, Play, Users, Wifi } from 'lucide-react';
 import { createGameSocket } from './realtime.js';
 import { playSfx } from './audio.js';
+import RoomChat from './RoomChat.jsx';
 
 export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) {
   const [state, setState] = useState(null);
@@ -97,6 +98,9 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
           <button className={`primary ready-toggle ${me?.ready ? 'is-ready' : ''}`} onClick={toggleReady} disabled={!me || loading || !socket?.connected}><Check size={18} />{me?.ready ? 'BỎ SẴN SÀNG' : 'TÔI ĐÃ SẴN SÀNG'}</button>
           <button className="secondary leave-table" onClick={exitRoom} disabled={leaving}><DoorOpen size={16} /> Rời bàn</button>
         </div>
+        {socket?.connected && userId && (
+          <RoomChat socket={socket} roomCode={room.code} userId={userId} />
+        )}
       </main>
     </section>
   );

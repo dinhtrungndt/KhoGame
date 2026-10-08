@@ -8,6 +8,8 @@ import RoomLobby from './RoomLobby.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import { api } from './api.js';
 import { playSfx, setMusicEnabled, unlockAudio } from './audio.js';
+import { clearChatMessages } from './chatStore.js';
+import { stopMic } from './voiceChat.js';
 
 export default function App() {
   const resetToken = new URLSearchParams(window.location.search).get('token');
@@ -117,6 +119,15 @@ export default function App() {
     await api.leaveRoom(room.code);
     setRoom(null);
     setPage('rooms');
+    clearChatMessages();
+    stopMic();
+  }
+
+  function goHomeFromTable() {
+    setPage('lobby');
+    setRoom(null);
+    clearChatMessages();
+    stopMic();
   }
 
   async function resetPassword(password) {
@@ -170,7 +181,7 @@ export default function App() {
           music={music}
           onToggleSound={() => setSound((enabled) => !enabled)}
           onToggleMusic={() => setMusic((enabled) => !enabled)}
-          onHome={() => setPage('lobby')}
+          onHome={goHomeFromTable}
           onSettings={() => setModal('settings')}
           onGameNotice={showNotice}
         />
@@ -204,3 +215,4 @@ export default function App() {
     </main>
   );
 }
+

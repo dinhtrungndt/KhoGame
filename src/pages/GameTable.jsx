@@ -5,6 +5,7 @@ import { createGameSocket } from '../realtime.js';
 import RulesGuide from './RulesGuide.jsx';
 import { playSfx } from '../audio.js';
 import logo from '../assets/logo/tsa.png';
+import RoomChat from '../RoomChat.jsx';
 
 const cardInfo = (card) => cards[card?.key] || null;
 const seatPoint = (index, total) => {
@@ -250,6 +251,13 @@ export default function GameTable({ room, gameName, sound, music, onToggleSound,
 
       <section className={`hand live-hand ${dealing ? 'is-dealing' : ''}`}><div className="hand-title">BÀI CỦA {me?.username?.toLocaleUpperCase() ?? 'BẠN'}　<b>{hand.length}</b><span>{dealing ? <small className="dealing-label">ĐANG CHIA BÀI…</small> : <button onClick={() => setGuideOpen(true)}><CircleHelp size={14} /> Hướng dẫn</button>}</span></div><div className={`cards ${hand.length > 7 ? 'many-cards' : ''}`}>{hand.map((card) => { const info = cardInfo(card); return info ? <button key={card.id} className={`playing-card asset-card ${selectedIds.includes(card.id) ? 'chosen' : ''} ${card.id === receivedCardId ? 'card-received' : ''}`} onClick={() => toggleCard(card)} aria-pressed={selectedIds.includes(card.id)} aria-label={`Chọn ${info.name}`}><img src={info.image} alt={info.name} /></button> : null; })}</div><div className="actions"><button className="secondary" onClick={() => request('game:draw')} disabled={!isMyTurn || busy}>↧　Bốc bài</button><span>{game?.status === 'finished' ? `Người thắng: ${game.players.find((player) => player.userId === game.winnerId)?.username ?? ''}` : isMyTurn ? 'Đánh lá/ combo rồi rút bài trước khi hết giờ' : 'Đang chờ lượt'}</span></div></section>
       {guideOpen && <RulesGuide onClose={() => setGuideOpen(false)} />}
+      
+      {socket?.connected && userId && (
+        <RoomChat socket={socket} roomCode={room?.code} userId={userId} />
+      )}
     </section>
   );
 }
+
+
+
