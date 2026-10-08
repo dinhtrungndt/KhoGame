@@ -68,7 +68,7 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
     <section className={`rooms-page waiting-page ${expanded ? 'is-expanded' : ''}`}>
       <header className="rooms-top">
         <button className="back-link" onClick={exitRoom} disabled={leaving}><ArrowLeft size={17} />{leaving ? 'Đang rời phòng…' : 'Rời phòng'}</button>
-        <div className="rooms-brand"><i>✦</i><span>MÈO NỔ<small>BÀN CHỜ</small></span></div>
+        <div className="rooms-brand"><i>{room.gameType === 'uno' ? '🔥' : '✨'}</i><span>{room.gameType === 'uno' ? 'UNO' : 'MÈO NỔ'}<small>BÀN CHỜ</small></span></div>
         <div className="waiting-top-actions">
           <button className="expand-button" onClick={() => setExpanded((value) => !value)} aria-label={expanded ? 'Thu nhỏ bàn chơi' : 'Phóng to bàn chơi'} title={expanded ? 'Thu nhỏ bàn chơi' : 'Phóng to bàn chơi'}>
             {expanded ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
@@ -77,9 +77,9 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
         </div>
       </header>
       <main className="room-table-page">
-        <div className="room-table-heading"><div><label className="kicker">PHÒNG {room.code}</label><h1>{state?.room?.name ?? room.name}</h1></div><button className="secondary" onClick={copyCode}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Đã sao chép' : 'Mời bạn'}</button></div>
+        <div className="room-table-heading"><div><label className="kicker">PHÒNG {room.code}</label><h1>{state?.room?.name ?? room.name.replace('Mèo Nổ', room.gameType === 'uno' ? 'UNO' : 'Mèo Nổ')}</h1></div><button className="secondary" onClick={copyCode}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Đã sao chép' : 'Mời bạn'}</button></div>
         <section className="felt waiting-felt" aria-label="Bàn chờ Mèo Nổ">
-          <div className="waiting-felt-text"><span className="felt-spark">✦</span><strong>{players.length < 3 ? 'Đang chờ thêm người chơi' : state?.canStart ? 'Bàn đã sẵn sàng!' : 'Chờ mọi người sẵn sàng'}</strong><small><Users size={14} /> {players.length}/{state?.room?.max ?? room.max} người　·　Cần tối thiểu 3 người</small>
+          <div className="waiting-felt-text"><span className="felt-spark">✦</span><strong>{(players.length < (room.gameType === 'uno' ? 2 : 3)) ? 'Đang chờ thêm người chơi' : state?.canStart ? 'Bàn đã sẵn sàng!' : 'Chờ mọi người sẵn sàng'}</strong><small><Users size={14} /> {players.length}/{state?.room?.max ?? room.max} người　·　Cần tối thiểu {room.gameType === 'uno' ? 2 : 3} người</small>
             {isHost ? <button className={`table-start ${canStart ? 'ready-to-start' : ''}`} onClick={startGame} disabled={!canStart || loading}><Play size={18} fill="currentColor" /> BẮT ĐẦU VÁN</button> : <span className="host-wait">Chủ phòng sẽ bắt đầu khi mọi người sẵn sàng</span>}
           </div>
           {Array.from({ length: Math.min(10, state?.room?.max ?? room.max ?? 5) }, (_, index) => {
@@ -105,3 +105,4 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
     </section>
   );
 }
+

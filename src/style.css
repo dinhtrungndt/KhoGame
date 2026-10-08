@@ -3000,3 +3000,83 @@ button {
 .fab.mic-fab.active {
   background: #10b981;
 }
+
+/* --- UNO COMPONENT --- */
+.uno-felt {
+  background: radial-gradient(circle, #2a5298 0%, #1e3c72 100%) !important;
+}
+
+.center-pile {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.direction-indicator {
+  position: absolute;
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.2);
+  z-index: 0;
+  pointer-events: none;
+}
+.direction-indicator.clockwise {
+  animation: spin 10s linear infinite;
+}
+.direction-indicator.counter-clockwise {
+  animation: spin-reverse 10s linear infinite;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+
+/* UNO Deck sizes */
+.uno-felt .deck img { width: clamp(68px, 9vw, 92px); height: clamp(94px, 13vw, 128px); object-fit: contain; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+
+/* UNO board layout */
+.uno-layout { overflow: hidden; gap: 8px; padding-top: 8px; }
+.uno-layout .table-header { height: 52px; }
+.uno-layout .table-brand { min-width: 0; }
+.uno-layout .room-info { color: #9bb4a5; font-size: 10px; }
+.uno-layout .table-tools { margin-left: auto; display: flex; gap: 8px; }
+.uno-layout .icon-btn { width: 38px; height: 38px; border: 1px solid #ffffff22; border-radius: 50%; display: grid; place-items: center; color: #e4f1e7; background: #ffffff0a; }
+.uno-layout .icon-btn:hover { border-color: #5be0a0; background: #2ab7781f; }
+.uno-felt { flex: 1; min-height: 260px; }
+.uno-felt .center-pile { position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%,-50%); gap: clamp(16px,3vw,36px); }
+.uno-felt .deck { position: relative; cursor: pointer; flex: none; }
+.uno-felt .discard-pile { cursor: default; }
+.uno-felt .direction-indicator { left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.uno-layout .opponent-seat { position: absolute; z-index: 2; display: flex; align-items: center; gap: 8px; min-width: 110px; max-width: 190px; padding: 8px 11px; transform: translate(-50%, -50%); border: 1px solid #ffffff24; border-radius: 14px; color: #f4fbf5; background: #09251fe8; box-shadow: 0 8px 22px #0005; }
+.uno-layout .opponent-seat.is-turn { border-color: #f5ce76; box-shadow: 0 0 0 2px #f5ce7636, 0 8px 22px #0005; }
+.uno-layout .opponent-seat .avatar { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(140deg,#61cbb2,#147570); color: #fff; font-weight: 800; }
+.uno-layout .opponent-seat .info { display: grid; gap: 3px; font-size: 11px; }
+.uno-layout .opponent-seat .cards-count { color: #c4d8ca; font-size: 9px; }
+.uno-layout .timer-bar { height: 3px; overflow: hidden; border-radius: 4px; background: #ffffff24; }
+.uno-layout .timer-bar .fill { display: block; height: 100%; background: #f5ce76; animation: uno-turn-time 15s linear both; }
+@keyframes uno-turn-time { from { width: 100%; } to { width: 0; } }
+.uno-layout .hand { width: 100%; height: clamp(180px, 27vh, 230px); }
+.uno-layout .hand-title { width: min(900px, 94%); }
+.uno-layout .cards { max-width: 96vw; overflow-x: auto; justify-content: center; }
+.uno-layout .playing-card { width: clamp(56px, 7vw, 92px); height: clamp(88px, 15vh, 138px); flex: none; }
+.uno-layout .actions { width: min(1000px, 96%); gap: 8px; flex-wrap: wrap; }
+.uno-layout .actions > span { color: #bbd1c2; font-size: 10px; }
+.uno-connection-error { position: absolute; z-index: 10; top: 64px; left: 50%; transform: translateX(-50%); padding: 8px 14px; border: 1px solid #ff778077; border-radius: 10px; background: #411d22ed; color: #ffd4d7; font-size: 12px; }
+.uno-victory-overlay { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 20px; background: #06140fe0; }
+.uno-victory-overlay section { width: min(480px,100%); padding: 34px; border: 1px solid #eed07577; border-radius: 22px; text-align: center; background: linear-gradient(145deg,#134d38,#10251e); box-shadow: 0 24px 80px #0008; }
+.uno-victory-overlay small { color: #f5ce76; letter-spacing: .12em; }
+.uno-victory-overlay h1 { font-size: clamp(22px,4vw,36px); }
+.uno-victory-overlay p { color: #b9d1c0; }
+@media(max-width:700px) { .uno-layout { padding: 4px 8px 8px; } .uno-layout .table-header { height: 44px; } .uno-layout .opponent-seat { min-width: 0; max-width: 118px; padding: 5px 7px; gap: 5px; } .uno-layout .opponent-seat .avatar { width: 27px; height: 27px; } .uno-layout .opponent-seat .info { font-size: 9px; } .uno-layout .hand { height: 190px; } .uno-layout .playing-card { height: 94px; width: 62px; } .uno-layout .actions { justify-content: center !important; } }
+
+.uno-layout { width: 100%; max-width: none; height: 100dvh; margin: 0; padding-right: clamp(8px,1.4vw,24px); padding-left: clamp(8px,1.4vw,24px); }
+.uno-felt .draw-pile .count { position: absolute; bottom: -20px; left: 0; right: 0; text-align: center; color: #f6fff7; font-size: 16px; font-weight: 700; text-shadow: 0 2px 5px #0008; }
+.uno-felt .draw-pile.can-draw { cursor: pointer; box-shadow: 0 0 0 3px #ffe17d88, 0 10px 26px #0009; animation: uno-draw-ready 1.6s ease-in-out infinite; }
+@keyframes uno-draw-ready { 50% { filter: brightness(1.2); } }
+.uno-layout .playing-card.uno-unplayable { opacity: .58; filter: saturate(.55); }
+@media(max-width:700px) { .uno-layout { width: 100%; } }
+
+.uno-layout .opponent-seat.is-self { border-color: #f3cf70; box-shadow: 0 0 0 2px #f3cf7044, 0 8px 22px #0005; }
+.uno-layout .opponent-seat.is-self .avatar { background: linear-gradient(140deg,#ef8960,#ad3c54); }
+.uno-layout .opponent-seat .name { max-width: 132px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uno-called-mark { color: #ffdf5b; font-weight: 800; font-size: 10px; }

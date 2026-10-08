@@ -3,6 +3,7 @@ import { ArrowRight, Check, Sparkles, X } from 'lucide-react';
 import AuthPage from './pages/AuthPage.jsx';
 import LobbyPage from './pages/LobbyPage.jsx';
 import GameTable from './pages/GameTable.jsx';
+import UnoTable from './pages/UnoTable.jsx';
 import Rooms from './Rooms.jsx';
 import RoomLobby from './RoomLobby.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
@@ -99,12 +100,7 @@ export default function App() {
   }
 
   function continueFromLobby() {
-    if (selectedGame === 'cat') {
-      setPage('rooms');
-      return;
-    }
-    setPage('table');
-    showNotice('Bản giao diện xem trước');
+    setPage('rooms');
   }
 
   function joinRoom(nextRoom) {
@@ -166,14 +162,26 @@ export default function App() {
           loggingOut={loggingOut}
           onLogout={logout}
           selectedGame={selectedGame}
-          onSelect={(game) => { setSelectedGame(game); if (game === 'cat') setPage('rooms'); }}
+          onSelect={(game) => { setSelectedGame(game); setPage('rooms'); }}
           onContinue={continueFromLobby}
           onInstall={installApp}
         />
       )}
-      {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} />}
+      {page === 'rooms' && <Rooms onBack={() => setPage('lobby')} onJoin={joinRoom} selectedGame={selectedGame} />}
       {page === 'roomLobby' && room && <RoomLobby room={room} onLeave={leaveCurrentRoom} onStartGame={startRoomGame} sound={sound} />}
-      {page === 'table' && (
+      {page === 'table' && room?.gameType === 'uno' && (
+        <UnoTable
+          room={room}
+          sound={sound}
+          music={music}
+          onToggleSound={() => setSound((enabled) => !enabled)}
+          onToggleMusic={() => setMusic((enabled) => !enabled)}
+          onHome={goHomeFromTable}
+          onSettings={() => setModal('settings')}
+          onGameNotice={showNotice}
+        />
+      )}
+      {page === 'table' && room?.gameType !== 'uno' && (
         <GameTable
           room={room}
           gameName={selectedGame === 'cat' ? 'Mèo Nổ' : 'UNO'}
@@ -215,4 +223,5 @@ export default function App() {
     </main>
   );
 }
+
 
