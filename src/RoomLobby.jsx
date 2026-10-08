@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, Check, Copy, DoorOpen, Play, Users, Wifi } from 'lucide-react';
+import { ArrowLeft, Check, Copy, DoorOpen, Maximize2, Minimize2, Play, Users, Wifi } from 'lucide-react';
 import { createGameSocket } from './realtime.js';
 import { playSfx } from './audio.js';
 
@@ -11,6 +11,7 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [socket, setSocket] = useState(null);
+  const [expanded, setExpanded] = useState(false);
   const soundRef = useRef(sound);
   const stateRef = useRef(null);
   soundRef.current = sound;
@@ -63,11 +64,16 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
   }
 
   return (
-    <section className="rooms-page waiting-page">
+    <section className={`rooms-page waiting-page ${expanded ? 'is-expanded' : ''}`}>
       <header className="rooms-top">
         <button className="back-link" onClick={exitRoom} disabled={leaving}><ArrowLeft size={17} />{leaving ? 'Đang rời phòng…' : 'Rời phòng'}</button>
         <div className="rooms-brand"><i>✦</i><span>MÈO NỔ<small>BÀN CHỜ</small></span></div>
-        <span className="online-pill"><i />{socket?.connected ? 'Realtime' : 'Đang kết nối'}</span>
+        <div className="waiting-top-actions">
+          <button className="expand-button" onClick={() => setExpanded((value) => !value)} aria-label={expanded ? 'Thu nhỏ bàn chơi' : 'Phóng to bàn chơi'} title={expanded ? 'Thu nhỏ bàn chơi' : 'Phóng to bàn chơi'}>
+            {expanded ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </button>
+          <span className="online-pill"><i />{socket?.connected ? 'Realtime' : 'Đang kết nối'}</span>
+        </div>
       </header>
       <main className="room-table-page">
         <div className="room-table-heading"><div><label className="kicker">PHÒNG {room.code}</label><h1>{state?.room?.name ?? room.name}</h1></div><button className="secondary" onClick={copyCode}>{copied ? <Check size={16} /> : <Copy size={16} />}{copied ? 'Đã sao chép' : 'Mời bạn'}</button></div>

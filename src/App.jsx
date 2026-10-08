@@ -29,6 +29,12 @@ export default function App() {
     const onInstalled = () => setInstallPrompt(null);
     window.addEventListener('beforeinstallprompt', captureInstallPrompt);
     window.addEventListener('appinstalled', onInstalled);
+    
+    // Attempt to lock screen orientation to landscape
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(() => {});
+    }
+
     return () => {
       window.removeEventListener('beforeinstallprompt', captureInstallPrompt);
       window.removeEventListener('appinstalled', onInstalled);
