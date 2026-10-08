@@ -16,8 +16,9 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh
+  min-height: 100dvh
 }
+#root { min-height: 100dvh; width: 100%; }
 button,
 input {
   font: inherit
@@ -26,7 +27,7 @@ button {
   cursor: pointer
 }
 .app {
-  min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   overflow: hidden;
   background: radial-gradient(ellipse at 78% 4%, #244a3b, transparent 34%), #0e1714
@@ -2448,318 +2449,32 @@ button {
 .table-brand>i { overflow: hidden; background: #f1f8f1; }
 .table-brand>i img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 
-/* ===================================================================
-   FORCED LANDSCAPE ON PORTRAIT PHONES
-   When the phone is held vertically we rotate #root -90deg so the
-   long side becomes the "width". After rotation the CSS viewport units
-   still reference the ORIGINAL viewport, so:
-     • real width of rotated view  = 100dvh  (phone height)
-     • real height of rotated view = 100dvw  (phone width)
-   All overrides below use dvh for widths and dvw for heights.
-   =================================================================== */
-@media screen and (orientation: portrait) and (max-width: 900px) {
-
-  /* --- lock the real viewport ------------------------------------ */
-  html, body {
-    position: fixed;
-    width: 100dvw;
-    height: 100dvh;
-    overflow: hidden;
-    margin: 0;
-    touch-action: manipulation;
-  }
-
-  /* --- rotate the app container ---------------------------------- */
-  #root {
-    position: fixed;
-    top: 0;
-    left: 0;
-    /* after rotation: width=dvh (long side), height=dvw (short side) */
-    width: 100dvh;
-    height: 100dvw;
-    transform-origin: top left;
-    transform: rotate(-90deg) translateX(-100%);
-    overflow: hidden;
-  }
-
-  /* --- .app fills the rotated rectangle -------------------------- */
-  .app {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* =============== AUTH / LOGIN PAGE ============================== */
-  .auth {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    max-height: 100%;
-    overflow-y: auto;
-    padding: 14px clamp(18px, 3dvh, 40px);
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-    gap: clamp(16px, 3dvh, 40px);
-    align-content: center;
-  }
-  .hero {
-    display: flex;
-    min-height: 0;
-    height: 100%;
-    padding: clamp(14px, 2dvw, 24px) clamp(16px, 2dvh, 28px);
-  }
-  .hero-copy { margin-top: 0; }
-  .hero h1 { font-size: clamp(26px, 4dvh, 48px); }
-  .cards-deco {
-    height: clamp(90px, 15dvw, 160px);
-  }
-  .cards-deco b {
-    width: clamp(60px, 9dvh, 95px);
-    height: clamp(85px, 12dvw, 135px);
-  }
-  .cards-deco img {
-    width: clamp(55px, 8dvh, 95px);
-    height: clamp(82px, 12dvw, 135px);
-  }
-  .auth-side {
-    min-height: 0;
-    height: 100%;
-    padding: 8px clamp(6px, 2dvh, 24px);
-    overflow-y: auto;
-  }
-  .mini-brand { display: none; }
-  .auth-box {
-    width: min(100%, 380px);
-    padding: 0;
-    margin: auto;
-  }
-  .auth-box h2 { font-size: clamp(22px, 3.5dvh, 32px); }
-
-  /* =============== LOBBY PAGE ==================================== */
-  .lobby {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 12px clamp(16px, 3dvh, 44px) 10px;
-    overflow-y: auto;
-  }
-  .lobby-content {
-    width: min(880px, 100%);
-    min-height: 0;
-    padding: 14px 0;
-    overflow-y: auto;
-  }
-  .center h1 { font-size: clamp(25px, 3.5dvh, 36px); }
-  .games {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .game { min-height: 170px; }
-  .cta { flex-direction: row; align-items: center; }
-  .cta .primary { width: auto; }
-
-  /* =============== ROOMS PAGE ==================================== */
-  .rooms-page {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 12px clamp(16px, 3dvh, 44px);
-    overflow-y: auto;
-  }
-  .rooms-main {
-    width: min(850px, 100%);
-    min-height: 0;
-    padding: 14px 0;
-    overflow-y: auto;
-  }
-  .rooms-intro h1 { font-size: clamp(24px, 3.5dvh, 34px); }
-  .room-options {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
-  }
-  .room-option {
-    min-height: 130px;
-    padding: 12px;
-  }
-  .option-icon {
-    position: static;
-    transform: none;
-    margin-bottom: 10px;
-  }
-  .rooms-top { height: 46px; }
-
-  /* =============== RESET PASSWORD PAGE =========================== */
-  .reset-page {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    overflow-y: auto;
-  }
-
-  /* =============== WAITING / ROOM TABLE ========================== */
-  .room-table-page {
-    width: min(1300px, 96%);
-    margin: 8px auto 14px;
-  }
-  .waiting-felt {
-    min-height: 0;
-    height: clamp(280px, 54dvw, 440px);
-  }
-  .waiting-felt-text {
-    width: min(400px, 50%);
-  }
-  .waiting-page .room-table-page {
-    flex: 1 1 0%;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-    margin-top: 4px;
-    margin-bottom: 4px;
-  }
-  .waiting-page .room-table-heading {
-    flex: none;
-    margin-bottom: 6px;
-  }
-  .waiting-page .room-table-heading h1 {
-    font-size: clamp(1.1rem, 3.5dvh, 1.6rem);
-  }
-  .waiting-page .waiting-felt {
-    flex: 1;
-    height: auto;
-    max-height: 100%;
-    min-height: 0;
-  }
-  .waiting-page .room-table-actions {
-    flex: none;
-    min-height: 40px;
-    margin: 4px auto 0;
-    gap: 6px;
-  }
-  .waiting-page .ready-summary { font-size: 10px; }
-  .waiting-page .ready-summary span { font-size: 8px; }
-  .waiting-page .ready-toggle {
-    min-width: 0;
-    padding: 7px 10px;
-    font-size: 9px;
-  }
-
-  /* =============== LIVE GAME TABLE =============================== */
-  .table {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 0 10px 8px;
-  }
-  .table > header { height: 46px; }
-  .table.live-game-table {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    padding: 4px 10px 6px;
-    gap: 4px;
-    overflow: hidden;
-  }
-  .table.live-game-table > header {
-    height: 44px;
-    min-height: 44px;
-  }
-  .table.live-game-table .live-felt {
-    flex: 1 1 0%;
-    height: auto;
-    min-height: 0;
-    border-radius: 14px;
-  }
-  .live-hand {
-    height: clamp(130px, 22dvw, 170px);
-    min-height: 0;
-    padding-top: 3px;
-  }
-  .live-hand .cards {
-    width: 100%;
-    height: clamp(90px, 15dvw, 115px);
-    justify-content: center;
-    padding: 4px 8px 6px;
-  }
-  .live-hand .cards:not(.many-cards) { justify-content: center; }
-  .live-hand .playing-card {
-    width: clamp(54px, 7dvh, 76px);
-    height: clamp(76px, 12dvw, 98px);
-    margin-left: -9px;
-  }
-  .live-hand .playing-card:first-child { margin-left: 0; }
-  .live-hand .actions {
-    min-height: 28px;
-    gap: 12px;
-  }
-  .live-hand .actions span { font-size: 10px; }
-  .live-center { gap: 5px; }
-  .live-piles { gap: 12px; }
-  .live-deck { transform: scale(.62); }
-  .empty-discard { height: 86px; width: 58px; font-size: 8px; }
-
-  /* seat positions */
-  .live-seat { min-width: 72px; max-width: 100px; padding: 5px 6px; }
-  .live-seat .lobby-avatar { width: 27px; height: 27px; }
-  .live-seat b { max-width: 82px; font-size: 10px; }
-  .live-seat > small { font-size: 8px; }
-  .live-seat-1 { right: 2% !important; top: 26%; }
-  .live-seat-2 { right: 2% !important; bottom: 16%; }
-  .live-seat-4 { left: 2%; bottom: 16%; }
-  .live-seat-5 { left: 2%; top: 26%; }
-
-  .table.live-game-table .hand {
-    height: clamp(140px, 20dvw, 170px);
-  }
-  .table.live-game-table .actions {
-    position: static;
-    justify-content: center;
-  }
-
-  /* =============== EXPANDED WAITING ============================== */
-  .waiting-page.is-expanded {
-    padding: 4px 10px;
-  }
-  .waiting-page.is-expanded .rooms-top { height: 38px; }
-  .waiting-page.is-expanded .room-table-page {
-    width: calc(100% - 20px);
-    height: calc(100% - 100px);
-    margin: 0;
-  }
-  .waiting-page.is-expanded .waiting-felt { flex: 1; }
-
-  /* =============== MODALS / OVERLAYS ============================= */
-  .scrim { padding: 12px; }
-  .modal { max-height: 90%; overflow-y: auto; }
-
-  .victory-overlay { padding: 12px; }
-  .victory-card { max-height: 92%; overflow-y: auto; padding: 22px 20px 18px; }
-
-  .guide-panel { width: min(380px, 80dvh); }
-
-  .bomb-prompt, .peek-strip {
-    bottom: clamp(140px, 20dvw, 200px);
-    width: min(640px, 88dvh);
-  }
-
-  .peek-overlay { padding: 14px; }
-  .peek-modal { max-height: 92%; overflow-y: auto; }
-
-  .combo-choice-overlay { padding: 12px; }
-  .combo-choice-modal { max-height: 90%; overflow-y: auto; }
-}
-
-/* ===================================================================
-   Non-portrait: waiting-top-actions and expand button (always visible)
-   =================================================================== */
+/* Waiting room controls */
 .waiting-top-actions {
   justify-self: end;
   display: flex;
   align-items: center;
   gap: 7px;
+}
+
+@media (max-width: 680px) {
+  .rooms-page {
+    width: 100%;
+    max-width: none;
+    min-height: 100dvh;
+    padding: 12px 14px calc(18px + env(safe-area-inset-bottom));
+  }
+  .rooms-top {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 6px;
+  }
+  .rooms-top > .online-pill,
+  .rooms-top > .waiting-top-actions { justify-self: end; }
+  .rooms-main { width: 100%; min-width: 0; }
+  .room-options { grid-template-columns: minmax(0, 1fr); }
+  .room-form, .created-card { width: 100%; }
+  .room-table-page { width: 100%; padding: 0 2px; }
+  .waiting-felt { overflow: hidden; }
 }
 .expand-button {
   width: 30px;

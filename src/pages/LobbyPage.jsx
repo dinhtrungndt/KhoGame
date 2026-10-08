@@ -4,7 +4,7 @@ import logo from '../assets/logo/tsa.png';
 
 const games = [
   {
-    id: 'cat',
+    id: 'meono',
     name: 'Mèo Nổ',
     subtitle: 'Đấu trí • 3–10 người',
     description: 'Đánh bài khéo léo, đoán ý đối thủ và đừng để vận may phản chủ.',

@@ -4,6 +4,7 @@ import { api } from './api.js';
 import { createGameSocket } from './realtime.js';
 
 export default function Rooms({ onBack, onJoin, selectedGame }) {
+  const gameType = selectedGame === 'cat' ? 'meono' : selectedGame;
   const [view, setView] = useState('home');
   const [capacity, setCapacity] = useState(5);
   const [roomName, setRoomName] = useState(selectedGame === 'uno' ? 'Phòng UNO' : 'Phòng Mèo Nổ');
@@ -19,7 +20,7 @@ export default function Rooms({ onBack, onJoin, selectedGame }) {
   async function refreshRooms(showSpinner = false) {
     if (showSpinner) setLoadingList(true);
     try {
-      const result = await api.listRooms(selectedGame);
+      const result = await api.listRooms(gameType);
       setLiveRooms(result.rooms);
       setMessage('');
     } catch (error) {
@@ -34,19 +35,19 @@ export default function Rooms({ onBack, onJoin, selectedGame }) {
     setLoadingList(true);
     const socket = createGameSocket();
     const onRooms = ({ rooms }) => { setLiveRooms(rooms); setMessage(''); setLoadingList(false); };
-    socket.on('connect', () => socket.emit('rooms:watch', { gameType: selectedGame }));
+    socket.on('connect', () => socket.emit('rooms:watch', { gameType }));
     socket.on('rooms:list', onRooms);
     socket.on('connect_error', (error) => { setMessage(error.message === 'AUTH_REQUIRED' ? 'Phiên đăng nhập hết hạn. Hãy đăng nhập lại.' : 'Không thể kết nối realtime. Thử nút làm mới để tải danh sách.'); setLoadingList(false); });
     socket.connect();
     return () => { socket.removeAllListeners(); socket.disconnect(); };
-  }, [view, selectedGame]);
+  }, [view, gameType]);
 
   async function createRoom(event) {
     event.preventDefault();
     setLoading(true);
     setMessage('');
     try {
-      const result = await api.createRoom({ gameType: selectedGame, name: roomName.trim(), capacity, visibility: privateRoom ? 'private' : 'public', password: privateRoom ? password : '' });
+      const result = await api.createRoom({ gameType, name: roomName.trim(), capacity, visibility: privateRoom ? 'private' : 'public', password: privateRoom ? password : '' });
       setCreatedRoom(result.room);
       setView('created');
     } catch (error) { setMessage(error.message); }
@@ -57,7 +58,7 @@ export default function Rooms({ onBack, onJoin, selectedGame }) {
     setLoading(true);
     setMessage('');
     try {
-      const result = await api.quickJoin(selectedGame);
+      const result = await api.quickJoin(gameType);
       onJoin(result.room);
     } catch (error) { setMessage(error.message); }
     finally { setLoading(false); }
@@ -67,7 +68,7 @@ export default function Rooms({ onBack, onJoin, selectedGame }) {
     setLoading(true);
     setMessage('');
     try {
-      const result = await api.joinRoom(code, roomPassword, selectedGame);
+      const result = await api.joinRoom(code, roomPassword, gameType);
       onJoin(result.room);
     } catch (error) { setMessage(error.message); }
     finally { setLoading(false); }
@@ -77,7 +78,7 @@ export default function Rooms({ onBack, onJoin, selectedGame }) {
     setLoading(true);
     setMessage('');
     try {
-      const result = await api.joinRoom(room.code, '', selectedGame);
+      const result = await api.joinRoom(room.code, '', gameType);
       onJoin(result.room);
     } catch (error) { setMessage(error.message); }
     finally { setLoading(false); }

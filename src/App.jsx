@@ -17,7 +17,7 @@ export default function App() {
   const [page, setPage] = useState(resetToken ? 'reset' : 'auth');
   const [username, setUsername] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
-  const [selectedGame, setSelectedGame] = useState('cat');
+  const [selectedGame, setSelectedGame] = useState('meono');
   const [room, setRoom] = useState(null);
   const [modal, setModal] = useState('');
   const [recoveryEmail, setRecoveryEmail] = useState('');
@@ -33,11 +33,6 @@ export default function App() {
     window.addEventListener('beforeinstallprompt', captureInstallPrompt);
     window.addEventListener('appinstalled', onInstalled);
     
-    // Attempt to lock screen orientation to landscape
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('landscape').catch(() => {});
-    }
-
     return () => {
       window.removeEventListener('beforeinstallprompt', captureInstallPrompt);
       window.removeEventListener('appinstalled', onInstalled);
@@ -184,7 +179,7 @@ export default function App() {
       {page === 'table' && room?.gameType !== 'uno' && (
         <GameTable
           room={room}
-          gameName={selectedGame === 'cat' ? 'Mèo Nổ' : 'UNO'}
+          gameName={selectedGame === 'meono' ? 'Mèo Nổ' : 'UNO'}
           sound={sound}
           music={music}
           onToggleSound={() => setSound((enabled) => !enabled)}

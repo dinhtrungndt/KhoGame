@@ -21,6 +21,8 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
   const isHost = me?.isHost ?? false;
   const canStart = Boolean(state?.canStart && isHost);
   const openSeats = useMemo(() => Math.max(0, (state?.room?.max ?? room.max ?? 5) - players.length), [players.length, room.max, state?.room?.max]);
+  const seatCount = Math.min(10, state?.room?.max ?? room.max ?? 5);
+  const localSeat = players.find((player) => String(player.userId) === String(userId))?.seat ?? 1;
 
   useEffect(() => {
     const connection = createGameSocket();
@@ -82,12 +84,14 @@ export default function RoomLobby({ room, onLeave, onStartGame, sound = true }) 
           <div className="waiting-felt-text"><span className="felt-spark">✦</span><strong>{(players.length < (room.gameType === 'uno' ? 2 : 3)) ? 'Đang chờ thêm người chơi' : state?.canStart ? 'Bàn đã sẵn sàng!' : 'Chờ mọi người sẵn sàng'}</strong><small><Users size={14} /> {players.length}/{state?.room?.max ?? room.max} người　·　Cần tối thiểu {room.gameType === 'uno' ? 2 : 3} người</small>
             {isHost ? <button className={`table-start ${canStart ? 'ready-to-start' : ''}`} onClick={startGame} disabled={!canStart || loading}><Play size={18} fill="currentColor" /> BẮT ĐẦU VÁN</button> : <span className="host-wait">Chủ phòng sẽ bắt đầu khi mọi người sẵn sàng</span>}
           </div>
-          {Array.from({ length: Math.min(10, state?.room?.max ?? room.max ?? 5) }, (_, index) => {
-            const player = players.find((item) => item.seat === index + 1);
-            const angle = (Math.PI * 2 * index) / Math.min(10, state?.room?.max ?? room.max ?? 5) - Math.PI / 2;
-            const radiusX = 42; const radiusY = 39;
-            return <article key={index} className={`lobby-player-seat ${player ? 'is-filled' : ''} ${player?.userId === userId ? 'is-you' : ''}`} style={{ left: `${50 + Math.cos(angle) * radiusX}%`, top: `${50 + Math.sin(angle) * radiusY}%` }}>
-              <span className={`lobby-avatar av${index % 6}`}>{player ? player.username.slice(0, 1).toLocaleUpperCase() : '+'}</span><b>{player?.username ?? 'Ghế trống'}</b><small>{player?.isHost ? 'Chủ phòng' : player?.userId === userId ? 'Bạn' : player ? 'Người chơi' : 'Đang chờ'}</small>{player && <em className={player.ready ? 'seat-ready' : ''}>{player.ready ? 'SẴN SÀNG' : 'CHƯA SẴN SÀNG'}</em>}
+          {Array.from({ length: seatCount }, (_, index) => {
+            const seatNumber = ((localSeat - 1 + index) % seatCount) + 1;
+            const player = players.find((item) => item.seat === seatNumber);
+            const angle = (Math.PI * 2 * index) / seatCount;
+            const radiusX = 34; const radiusY = 30;
+            const isYou = String(player?.userId) === String(userId);
+            return <article key={seatNumber} className={`lobby-player-seat ${player ? 'is-filled' : ''} ${isYou ? 'is-you' : ''}`} style={{ left: `${50 + Math.cos(angle) * radiusX}%`, top: `${50 + Math.sin(angle) * radiusY}%` }}>
+              <span className={`lobby-avatar av${index % 6}`}>{player ? player.username.slice(0, 1).toLocaleUpperCase() : '+'}</span><b>{player?.username ?? 'Ghế trống'}</b><small>{player?.isHost ? 'Chủ phòng' : isYou ? 'Bạn' : player ? 'Người chơi' : 'Đang chờ'}</small>{player && <em className={player.ready ? 'seat-ready' : ''}>{player.ready ? 'SẴN SÀNG' : 'CHƯA SẴN SÀNG'}</em>}
             </article>;
           })}
           <span className="table-room-count"><Wifi size={14} /> {openSeats ? `Còn ${openSeats} ghế trống` : 'Đã đủ người'}</span>

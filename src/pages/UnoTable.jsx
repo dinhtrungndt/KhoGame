@@ -7,7 +7,7 @@ import RoomChat from '../RoomChat.jsx';
 
 const seatPoint = (index, total) => {
   const angle = (Math.PI * 2 * index) / Math.max(1, total);
-  return { x: 50 + Math.cos(angle) * 39, y: 50 + Math.sin(angle) * 35 };
+  return { x: 50 + Math.cos(angle) * 34, y: 50 + Math.sin(angle) * 30 };
 };
 
 const orderForDisplay = (players, anchorId) => {
@@ -22,11 +22,13 @@ export default function UnoTable({ room, sound, music, onToggleSound, onToggleMu
   const [hand, setHand] = useState([]);
   const [userId, setUserId] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [drawnPlayableCardId, setDrawnPlayableCardId] = useState(null);
   const [chosenColor, setChosenColor] = useState('red');
   const [busy, setBusy] = useState(false);
   const [clockNow, setClockNow] = useState(Date.now());
   const [connectionError, setConnectionError] = useState('');
-  
+  const soundRef = useRef(sound);
+  soundRef.current = sound;
   const localPlayRef = useRef(false);
 
   useEffect(() => {
@@ -48,11 +50,15 @@ export default function UnoTable({ room, sound, music, onToggleSound, onToggleMu
     s.on('game:private', (priv) => {
       setUserId(priv.userId);
       setHand(priv.hand);
-      if (sound && priv.drawn?.length > 0) playSfx('draw');
+      setDrawnPlayableCardId(priv.drawnPlayableCardId ?? null);
+      if (priv.drawn?.length > 0) {
+        setSelectedCard(null);
+        if (soundRef.current) playSfx('draw');
+      }
     });
     s.connect();
     return () => { s.removeAllListeners(); s.disconnect(); };
-  }, [room.code, sound]);
+  }, [room.code]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setClockNow(Date.now()), 1000);
@@ -81,6 +87,7 @@ export default function UnoTable({ room, sound, music, onToggleSound, onToggleMu
 
   function isPlayable(card) {
     if (!game || !topCard) return false;
+    if (game.drawnCardUserId) return String(game.drawnCardUserId) === String(userId) && card.id === drawnPlayableCardId;
     if (game.pendingDrawCount > 0) return topCard.type === 'wild_draw4' ? card.type === 'wild_draw4' : card.type === 'draw2' || card.type === 'wild_draw4';
     if (card.type === 'wild_draw4' && hand.some((heldCard) => heldCard.color === game.activeColor)) return false;
     return card.color === 'black' || card.color === game.activeColor || (card.type === 'number' && topCard.type === 'number' && card.value === topCard.value) || (card.type !== 'number' && topCard.type !== 'number' && card.type === topCard.type);
@@ -104,6 +111,7 @@ export default function UnoTable({ room, sound, music, onToggleSound, onToggleMu
 
   const timeLeft = Math.max(0, Math.ceil(((game?.turnDeadline ?? Date.now()) - clockNow) / 1000));
   const me = game?.players?.find(p => p.userId === userId);
+  const awaitingDrawChoice = String(game?.drawnCardUserId) === String(userId) && Boolean(drawnPlayableCardId);
 
   return (
     <section className="table uno-layout">
@@ -126,7 +134,7 @@ export default function UnoTable({ room, sound, music, onToggleSound, onToggleMu
           {game?.direction === -1 && <div className="direction-indicator counter-clockwise">↺</div>}
           {game?.direction === 1 && <div className="direction-indicator clockwise">↻</div>}
 
-          <div className={`deck draw-pile ${isMyTurn && !busy ? 'can-draw' : ''}`} role="button" tabIndex={isMyTurn ? 0 : -1} onClick={() => isMyTurn && !busy && request('uno:draw')} onKeyDown={(event) => { if (isMyTurn && !busy && (event.key === 'Enter' || event.key === ' ')) request('uno:draw'); }}>
+          <div className={`deck draw-pile ${isMyTurn && !busy && !game?.drawnCardUserId ? 'can-draw' : ''}`} role="button" tabIndex={isMyTurn && !game?.drawnCardUserId ? 0 : -1} onClick={() => isMyTurn && !busy && !game?.drawnCardUserId && request('uno:draw')} onKeyDown={(event) => { if (isMyTurn && !busy && !game?.drawnCardUserId && (event.key === 'Enter' || event.key === ' ')) request('uno:draw'); }}>
             <img src={back} alt="Draw" />
             <span className="count">{game?.drawPileCount ?? 0}</span>
           </div>
@@ -184,9 +192,7 @@ export default function UnoTable({ room, sound, music, onToggleSound, onToggleMu
         <div className="actions" style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
           {game?.pendingDrawCount > 0 && <div style={{color: 'red', fontWeight: 'bold'}}>Đang nợ +{game.pendingDrawCount} lá</div>}
           
-          <button className="secondary" onClick={() => request('uno:draw')} disabled={!isMyTurn || busy}>
-            ↧ Rút bài
-          </button>
+          {awaitingDrawChoice ? <button className="secondary" onClick={() => request('uno:pass')} disabled={!isMyTurn || busy}>Bỏ lượt</button> : <button className="secondary" onClick={() => request('uno:draw')} disabled={!isMyTurn || busy || Boolean(game?.drawnCardUserId)}>↧ Rút bài</button>}
           
           {selectedCard && selectedCard.color === 'black' && (
             <select value={chosenColor} onChange={e => setChosenColor(e.target.value)} style={{padding: '5px', borderRadius: '5px', background: '#333', color: 'white', border: '1px solid #555'}}>
